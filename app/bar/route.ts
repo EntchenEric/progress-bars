@@ -5,24 +5,21 @@ export async function GET(request: NextRequest) {
 
   const color = searchParams.get('color') || '#2563eb';
   const backgroundColor = searchParams.get('backgroundColor') || '#f3f4f6';
-  const progress = parseInt(searchParams.get('progress') || '0');
-  const height = parseInt(searchParams.get('height') || '20');
-  const width = parseInt(searchParams.get('width') || '200');
-  const borderRadius = parseInt(searchParams.get('borderRadius') || '10');
+  const progress = parseIntSafe(searchParams.get('progress'), 0);
+  const height = Math.min(500, Math.max(0, parseIntSafe(searchParams.get('height'), 0)));
+  const width = Math.min(3000, Math.max(0, parseIntSafe(searchParams.get('width'), 0)));
+  const borderRadius = Math.min(1000, Math.max(0, parseIntSafe(searchParams.get('borderRadius'), 0)));
   const striped = searchParams.get('striped') === 'true';
   const animated = searchParams.get('animated') === 'true';
-  const animationSpeed = parseFloat(searchParams.get('animationSpeed') || '1');
-
+  const animationSpeed = parseFloatSafe(searchParams.get('animationSpeed'), 0);
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
-  
   const progressWidth = (clampedProgress / 100) * width;
+  const safeAnimationSpeed = Math.max(animationSpeed, 0.1);
   
-  const clampedAnimationSpeed = Math.max(animationSpeed, 0.1);
-  
-  const animationDuration = Math.pow(1 / clampedAnimationSpeed, 2);
+  const animationDuration = Math.pow(1 / safeAnimationSpeed, 2);
   const animationDurationString = animationDuration.toFixed(2);
   
-  const stripeSize = Math.max(10, Math.min(40, 20 * clampedAnimationSpeed));
+  const stripeSize = Math.max(10, Math.min(40, 20 * safeAnimationSpeed));
   
   const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
@@ -43,8 +40,8 @@ export async function GET(request: NextRequest) {
         <rect
           width="${progressWidth}"
           height="${height}"
-          rx="${borderRadius}"
-          ry="${borderRadius}"
+          rx="${Math.min(borderRadius, height/2, progressWidth/2)}"
+          ry="${Math.min(borderRadius, height/2, progressWidth/2)}"
         />
       </clipPath>
       
@@ -57,8 +54,8 @@ export async function GET(request: NextRequest) {
     <rect
       width="${width}"
       height="${height}"
-      rx="${borderRadius}"
-      ry="${borderRadius}"
+      rx="${Math.min(borderRadius, height/2)}"
+      ry="${Math.min(borderRadius, height/2)}"
       fill="${backgroundColor}"
       filter="url(#shadow)"
     />
@@ -98,7 +95,7 @@ export async function GET(request: NextRequest) {
     <!-- Animation definitions -->
     <style>
       @keyframes progress-stripes {
-        from { background-position: ${50 * clampedAnimationSpeed}px 0; }
+        from { background-position: ${50 * safeAnimationSpeed}px 0; }
         to { background-position: 0 0; }
       }
       
@@ -138,4 +135,24 @@ function adjustColor(color: string, amount: number): string {
   const newB = Math.min(255, Math.max(0, b + amount));
   
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+}
+
+// Helper function to safely parse integers with fallback
+function parseIntSafe(value: string | null, defaultValue: number): number {
+  if (value === null || value === undefined || value === '') {
+    return defaultValue;
+  }
+  
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+// Helper function to safely parse floats with fallback
+function parseFloatSafe(value: string | null, defaultValue: number): number {
+  if (value === null || value === undefined || value === '') {
+    return defaultValue;
+  }
+  
+  const parsed = parseFloat(value);
+  return isNaN(parsed) ? defaultValue : parsed;
 } 

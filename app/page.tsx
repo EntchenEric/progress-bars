@@ -43,20 +43,29 @@ export default function Home() {
   }, [copied])
 
   const generateUrl = () => {
-    // Ensure width is within reasonable constraints
-    const safeWidth = Math.max(50, Math.min(params.width, 2000));
+    const safeValues = {
+      progress: Math.max(0, Math.min(isNaN(params.progress) ? 0 : params.progress, 100)),
+      color: params.color || '#2563eb',
+      backgroundColor: params.backgroundColor || '#f3f4f6',
+      height: Math.min(500, Math.max(0, isNaN(params.height) ? 0 : params.height)),
+      width: Math.min(3000, Math.max(0, isNaN(params.width) ? 0 : params.width)),
+      borderRadius: Math.min(1000, Math.max(0, isNaN(params.borderRadius) ? 0 : params.borderRadius)),
+      striped: Boolean(params.striped),
+      animated: Boolean(params.animated),
+      animationSpeed: isNaN(params.animationSpeed) ? 0 : Math.max(0, params.animationSpeed)
+    };
     
     const baseUrl = 'https://progress-bars-eight.vercel.app/bar'
     const queryParams = new URLSearchParams({
-      progress: params.progress.toString(),
-      color: params.color,
-      backgroundColor: params.backgroundColor,
-      height: params.height.toString(),
-      width: safeWidth.toString(),
-      borderRadius: params.borderRadius.toString(),
-      striped: params.striped.toString(),
-      animated: params.animated.toString(),
-      animationSpeed: params.animationSpeed.toString(),
+      progress: safeValues.progress.toString(),
+      color: safeValues.color,
+      backgroundColor: safeValues.backgroundColor,
+      height: safeValues.height.toString(),
+      width: safeValues.width.toString(),
+      borderRadius: safeValues.borderRadius.toString(),
+      striped: safeValues.striped.toString(),
+      animated: safeValues.animated.toString(),
+      animationSpeed: safeValues.animationSpeed.toString(),
     })
     return `${baseUrl}?${queryParams.toString()}`
   }
@@ -317,11 +326,25 @@ export default function Home() {
                       id="height"
                       type="number"
                       value={params.height}
-                      onChange={(e) => setParams({ ...params, height: parseInt(e.target.value) })}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? '' : parseInt(e.target.value);
+                        let finalValue = value === '' ? 0 : isNaN(value as number) ? 0 : value as number;
+                        
+                        // Apply max constraint
+                        finalValue = Math.min(500, finalValue);
+                        
+                        setParams({ 
+                          ...params, 
+                          height: finalValue
+                        });
+                      }}
                       className={cn(
                         "mt-1",
                         theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
                       )}
+                      min={0}
+                      max={500}
+                      placeholder="0"
                     />
                   </div>
 
@@ -336,24 +359,29 @@ export default function Home() {
                       <Input
                         id="width"
                         type="number"
-                        min={50}
-                        max={2000}
+                        min={0}
+                        max={3000}
                         value={params.width}
                         onChange={(e) => {
-                          const value = parseInt(e.target.value);
+                          const value = e.target.value === '' ? '' : parseInt(e.target.value);
+                          // Handle empty value or invalid entry
+                          if (value === '' || isNaN(value as number)) {
+                            setParams({ ...params, width: 0 });
+                          }
                           // Enforce min/max constraints
-                          if (value < 50) {
-                            setParams({ ...params, width: 50 });
-                          } else if (value > 2000) {
-                            setParams({ ...params, width: 2000 });
+                          else if (value < 0) {
+                            setParams({ ...params, width: 0 });
+                          } else if (value > 3000) {
+                            setParams({ ...params, width: 3000 });
                           } else {
-                            setParams({ ...params, width: value });
+                            setParams({ ...params, width: value as number });
                           }
                         }}
                         className={cn(
                           "mt-1",
                           theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
                         )}
+                        placeholder="0"
                       />
                       {params.width > 1000 && (
                         <div className={cn(
@@ -377,11 +405,25 @@ export default function Home() {
                       id="borderRadius"
                       type="number"
                       value={params.borderRadius}
-                      onChange={(e) => setParams({ ...params, borderRadius: parseInt(e.target.value) })}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? '' : parseInt(e.target.value);
+                        let finalValue = value === '' ? 0 : isNaN(value as number) ? 0 : Math.max(0, value as number);
+                        
+                        // Apply max constraint
+                        finalValue = Math.min(1000, finalValue);
+                        
+                        setParams({ 
+                          ...params, 
+                          borderRadius: finalValue
+                        });
+                      }}
                       className={cn(
                         "mt-1",
                         theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
                       )}
+                      min={0}
+                      max={1000}
+                      placeholder="0"
                     />
                   </div>
                 </div>
@@ -581,7 +623,7 @@ export default function Home() {
                     </h2>
                   </div>
                   
-                  {params.width > 500 && (
+                  {params.width > 1000 && (
                     <div className={cn(
                       "mb-4 p-3 text-sm rounded-md",
                       theme === 'light' 
@@ -590,7 +632,7 @@ export default function Home() {
                     )}>
                       <div className="flex gap-2 items-center">
                         <Info className="h-4 w-4 flex-shrink-0" />
-                        <p>You've set a large width ({params.width}px). Consider using a smaller width for better embedding experience or ensure your container can handle the size.</p>
+                        <p>You've set a large width ({params.width}px). Consider using a smaller width for better embedding experience or ensure your container can handle the size. Maximum allowed is 3000px.</p>
                       </div>
                     </div>
                   )}

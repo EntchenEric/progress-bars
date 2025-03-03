@@ -7,20 +7,33 @@ import { Suspense } from 'react'
 function ProgressBar() {
   const searchParams = useSearchParams()
 
-  const color = searchParams.get('color') ?? 'red'
-  const backgroundColor = searchParams.get('backgroundColor') ?? 'white'
-  const progress = parseInt(searchParams.get('progress') ?? '0')
-  const height = parseInt(searchParams.get('height') ?? '20')
-  const width = parseInt(searchParams.get('width') ?? '100')
-  const borderRadius = parseInt(searchParams.get('borderRadius') ?? '50')
+  // Ensure we have default values and proper parsing
+  const color = searchParams.get('color') || '#2563eb'
+  const progress = parseInt(searchParams.get('progress') || '0')
+  const height = parseInt(searchParams.get('height') || '20')
+  const width = parseInt(searchParams.get('width') || '100')
+  const borderRadius = parseInt(searchParams.get('borderRadius') || '50')
+  const striped = searchParams.get('striped') === 'true'
+  const animated = searchParams.get('animated') === 'true'
 
   return (
-    <div>
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      minHeight: '100%',
+      padding: '10px'
+    }}>
       <Progress 
         value={progress} 
         color={color} 
-        backgroundColor={backgroundColor}
-        style={{ height: `${height}px`, width: `${width}px`, borderRadius: `${borderRadius}px` }}
+        striped={striped}
+        animated={animated}
+        style={{ 
+          height: `${height}px`, 
+          width: `${width}px`, 
+          borderRadius: `${borderRadius}px` 
+        }}
       />
     </div>
   );

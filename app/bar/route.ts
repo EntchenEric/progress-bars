@@ -28,8 +28,10 @@ export async function GET(request: NextRequest) {
       </linearGradient>
       
       ${striped ? `
-      <pattern id="stripePattern" patternUnits="userSpaceOnUse" width="20" height="${height}" patternTransform="rotate(45)">
-        <rect width="10" height="${height * 2}" fill="rgba(255, 255, 255, 0.15)" />
+      <pattern id="stripePattern" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(45 0 0)">
+        <rect width="10" height="20" fill="rgba(255, 255, 255, 0.15)" />
+        <rect x="10" width="10" height="20" fill="rgba(255, 255, 255, 0)" />
+        ${animated ? '<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="20 0" dur="0.75s" repeatCount="indefinite" additive="sum" />' : ''}
       </pattern>
       ` : ''}
       
@@ -70,10 +72,9 @@ export async function GET(request: NextRequest) {
       ${striped ? `
       <!-- Striped overlay -->
       <rect
-        width="${progressWidth + 100}" 
+        width="${progressWidth}"
         height="${height}"
         fill="url(#stripePattern)"
-        ${animated ? 'class="stripe-animated"' : ''}
       />
       ` : ''}
     </g>
@@ -99,14 +100,6 @@ export async function GET(request: NextRequest) {
         0% { opacity: 0.85; }
         50% { opacity: 1; }
         100% { opacity: 0.85; }
-      }
-      
-      .stripe-animated {
-        animation: stripe-animation 2s linear infinite;
-      }
-      @keyframes stripe-animation {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-20px); }
       }
     </style>
   </svg>`;

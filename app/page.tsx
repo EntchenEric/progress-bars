@@ -632,7 +632,7 @@ export default function Home() {
                     )}>
                       <div className="flex gap-2 items-center">
                         <Info className="h-4 w-4 flex-shrink-0" />
-                        <p>You've set a large width ({params.width}px). Consider using a smaller width for better embedding experience or ensure your container can handle the size. Maximum allowed is 3000px.</p>
+                        <p>You&apos;ve set a large width ({params.width}px). Consider using a smaller width for better embedding experience or ensure your container can handle the size. Maximum allowed is 3000px.</p>
                       </div>
                     </div>
                   )}

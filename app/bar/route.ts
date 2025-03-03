@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       ${striped ? `
       <!-- Striped overlay -->
       <rect
-        width="${width}"
+        width="${progressWidth + 100}" 
         height="${height}"
         fill="url(#stripePattern)"
         ${animated ? 'class="stripe-animated"' : ''}
@@ -105,8 +105,8 @@ export async function GET(request: NextRequest) {
         animation: stripe-animation 2s linear infinite;
       }
       @keyframes stripe-animation {
-        from { transform: translateX(0); }
-        to { transform: translateX(-20px); }
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-20px); }
       }
     </style>
   </svg>`;

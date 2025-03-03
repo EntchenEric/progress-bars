@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
-  // Get parameters with defaults
   const color = searchParams.get('color') || '#2563eb';
   const backgroundColor = searchParams.get('backgroundColor') || '#f3f4f6';
   const progress = parseInt(searchParams.get('progress') || '0');
@@ -12,14 +11,19 @@ export async function GET(request: NextRequest) {
   const borderRadius = parseInt(searchParams.get('borderRadius') || '10');
   const striped = searchParams.get('striped') === 'true';
   const animated = searchParams.get('animated') === 'true';
+  const animationSpeed = parseFloat(searchParams.get('animationSpeed') || '1');
 
-  // Ensure progress is between 0 and 100
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
   
-  // Calculate actual progress width
   const progressWidth = (clampedProgress / 100) * width;
   
-  // Create SVG for the progress bar
+  const clampedAnimationSpeed = Math.max(animationSpeed, 0.1);
+  
+  const animationDuration = Math.pow(1 / clampedAnimationSpeed, 2);
+  const animationDurationString = animationDuration.toFixed(2);
+  
+  const stripeSize = Math.max(10, Math.min(40, 20 * clampedAnimationSpeed));
+  
   const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -28,10 +32,10 @@ export async function GET(request: NextRequest) {
       </linearGradient>
       
       ${striped ? `
-      <pattern id="stripePattern" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(45 0 0)">
-        <rect width="10" height="20" fill="rgba(255, 255, 255, 0.15)" />
-        <rect x="10" width="10" height="20" fill="rgba(255, 255, 255, 0)" />
-        ${animated ? '<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="20 0" dur="0.75s" repeatCount="indefinite" additive="sum" />' : ''}
+      <pattern id="stripePattern" patternUnits="userSpaceOnUse" width="${stripeSize}" height="${stripeSize}" patternTransform="rotate(45 0 0)">
+        <rect width="${stripeSize/2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0.15)" />
+        <rect x="${stripeSize/2}" width="${stripeSize/2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0)" />
+        ${animated ? `<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="${stripeSize} 0" dur="${animationDurationString}s" repeatCount="indefinite" additive="sum" />` : ''}
       </pattern>
       ` : ''}
       
@@ -93,18 +97,27 @@ export async function GET(request: NextRequest) {
     
     <!-- Animation definitions -->
     <style>
-      .pulse-animated {
-        animation: pulse 2s ease-in-out infinite;
+      @keyframes progress-stripes {
+        from { background-position: ${50 * clampedAnimationSpeed}px 0; }
+        to { background-position: 0 0; }
       }
+      
+      .progress-animated {
+        animation: progress-stripes ${animationDurationString}s linear infinite;
+      }
+      
+      .pulse-animated {
+        animation: pulse ${(animationDuration * 1.2).toFixed(2)}s ease-in-out infinite;
+      }
+      
       @keyframes pulse {
-        0% { opacity: 0.85; }
+        0% { opacity: 0.8; }
         50% { opacity: 1; }
-        100% { opacity: 0.85; }
+        100% { opacity: 0.8; }
       }
     </style>
   </svg>`;
 
-  // Return the SVG with appropriate headers
   return new NextResponse(svg, {
     headers: {
       'Content-Type': 'image/svg+xml',
@@ -113,21 +126,16 @@ export async function GET(request: NextRequest) {
   });
 }
 
-// Helper function to adjust color brightness
 function adjustColor(color: string, amount: number): string {
-  // Remove # if present
   color = color.replace('#', '');
   
-  // Parse the color
   const r = parseInt(color.substring(0, 2), 16);
   const g = parseInt(color.substring(2, 4), 16);
   const b = parseInt(color.substring(4, 6), 16);
   
-  // Adjust brightness
   const newR = Math.min(255, Math.max(0, r + amount));
   const newG = Math.min(255, Math.max(0, g + amount));
   const newB = Math.min(255, Math.max(0, b + amount));
   
-  // Convert back to hex
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 } 

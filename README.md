@@ -35,7 +35,7 @@ https://progress-bars-eight.vercel.app/bar?progress=75
 
 ### Custom Styled Progress Bar
 ```
-https://progress-bars-eight.vercel.app/bar?progress=80&color=%232563eb&backgroundColor=%23f8fafc&height=30&width=200&borderRadius=10&striped=true&animated=true
+https://progress-bars-eight.vercel.app/bar?progress=80&color=%232563eb&backgroundColor=%23f8fafc&height=30&width=200&borderRadius=10&striped=true&animated=true&animationSpeed=1.5
 ```
 
 ### Use in Markdown
@@ -62,6 +62,7 @@ All parameters are optional and have sensible defaults:
 | borderRadius    | 10      | Border radius in pixels      | `borderRadius=20`           |
 | striped         | false   | Add striped effect           | `striped=true`              |
 | animated        | false   | Add animation to the bar     | `animated=true`             |
+| animationSpeed  | 1       | Speed multiplier (0.1-5)     | `animationSpeed=2.5`        |
 
 ## Common Use Cases
 

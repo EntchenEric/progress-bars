@@ -131,7 +131,7 @@ body {
 
 @keyframes progress-stripes {
   from {
-    background-position: 1rem 0;
+    background-position: 3rem 0;
   }
   to {
     background-position: 0 0;
@@ -139,7 +139,9 @@ body {
 }
 
 .progress-animated {
-  animation: progress-stripes 1s linear infinite;
+  animation-name: progress-stripes;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 .progress-striped {
@@ -153,5 +155,5 @@ body {
     transparent 75%,
     transparent
   );
-  background-size: 1rem 1rem;
+  background-size: 2rem 2rem;
 }

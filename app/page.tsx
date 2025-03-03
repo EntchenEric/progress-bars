@@ -20,6 +20,7 @@ export default function Home() {
     borderRadius: 10,
     striped: false,
     animated: false,
+    animationSpeed: 1,
   })
   
   const [copied, setCopied] = useState<string | null>(null)
@@ -27,7 +28,6 @@ export default function Home() {
   const [showConfetti, setShowConfetti] = useState(false)
 
   useEffect(() => {
-    // Check system preference for dark mode
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setTheme('dark')
     }
@@ -53,6 +53,7 @@ export default function Home() {
       borderRadius: params.borderRadius.toString(),
       striped: params.striped.toString(),
       animated: params.animated.toString(),
+      animationSpeed: params.animationSpeed.toString(),
     })
     return `${baseUrl}?${queryParams.toString()}`
   }
@@ -443,6 +444,40 @@ export default function Home() {
                     </Label>
                   </div>
                 </div>
+                
+                {params.animated && (
+                  <div className="mt-4 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label 
+                        htmlFor="animationSpeed"
+                        className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                      >
+                        Animation Speed
+                      </Label>
+                      <span className={cn(
+                        "text-sm font-medium",
+                        theme === 'light' ? "text-gray-600" : "text-gray-300"
+                      )}>
+                        {params.animationSpeed.toFixed(1)}x
+                      </span>
+                    </div>
+                    <Slider
+                      id="animationSpeed"
+                      min={0.1}
+                      max={5}
+                      step={0.1}
+                      value={[params.animationSpeed]}
+                      onValueChange={(value) => setParams({ ...params, animationSpeed: value[0] })}
+                      className={cn(
+                        theme === 'light' ? "py-1" : "py-1"
+                      )}
+                    />
+                    <div className="flex justify-between text-xs mt-1">
+                      <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Slower</span>
+                      <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Faster</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </Card>

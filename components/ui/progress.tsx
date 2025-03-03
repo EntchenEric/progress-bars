@@ -11,17 +11,25 @@ function Progress({
   color,
   animated = false,
   striped = false,
+  animationSpeed = 1,
   ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root> & {
   color?: string
   animated?: boolean
   striped?: boolean
+  animationSpeed?: number
 }) {
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  const animationDuration = Math.pow(1 / Math.max(animationSpeed, 0.1), 2);
+
+  const animationStyle = animated ? {
+    animationDuration: `${animationDuration}s`,
+  } : {};
 
   return (
     <ProgressPrimitive.Root
@@ -47,10 +55,11 @@ function Progress({
           transform: `translateX(-${100 - (value || 0)}%)`,
           backgroundColor: color || "#2563eb",
           transition: "transform 0.5s cubic-bezier(0.65, 0, 0.35, 1)",
-          backgroundSize: striped ? "1rem 1rem" : undefined,
+          backgroundSize: striped ? "2rem 2rem" : undefined,
           backgroundImage: striped 
             ? `linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent)` 
             : undefined,
+          ...animationStyle,
         }}
       />
     </ProgressPrimitive.Root>

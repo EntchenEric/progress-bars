@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -683,7 +682,7 @@ export default function Home() {
                     "w-2 h-2 rounded-full mt-1.5",
                     theme === 'light' ? "bg-blue-500" : "bg-blue-400"
                   )}></div>
-                  <span><strong>Background Color</strong> - The color of the progress bar's background</span>
+                  <span><strong>Background Color</strong> - The color of the progress bar&apos;s background</span>
                 </div>
                 
                 <div className="flex items-start gap-2">

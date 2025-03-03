@@ -7,7 +7,6 @@ import { Suspense } from 'react'
 function ProgressBar() {
   const searchParams = useSearchParams()
 
-  // Ensure we have default values and proper parsing
   const color = searchParams.get('color') || '#2563eb'
   const progress = parseInt(searchParams.get('progress') || '0')
   const height = parseInt(searchParams.get('height') || '20')

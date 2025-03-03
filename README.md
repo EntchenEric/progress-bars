@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Progress Bars
 
-## Getting Started
+A simple web service to generate and embed customizable progress bars anywhere! Just use our URL with your desired parameters.
 
-First, run the development server:
+🌐 **[Try it live](https://progress-bars-eight.vercel.app/bar)**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Quick Start
+
+Simply use our URL with query parameters to create your progress bar:
+
+```
+https://progress-bars-eight.vercel.app/bar?progress=75&color=blue
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage Examples
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Basic Progress Bar (75% Complete)
+```
+https://progress-bars-eight.vercel.app/bar?progress=75
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Custom Styled Progress Bar
+```
+https://progress-bars-eight.vercel.app/bar?progress=80&color=blue&backgroundColor=lightgray&height=30&width=200&borderRadius=10
+```
 
-## Learn More
+### Use in Markdown
+```markdown
+![Progress](https://progress-bars-eight.vercel.app/bar?progress=75&color=green)
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Use in HTML
+```html
+<img src="https://progress-bars-eight.vercel.app/bar?progress=75&color=blue" alt="Progress Bar">
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Customization Parameters
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+All parameters are optional and have sensible defaults:
 
-## Deploy on Vercel
+| Parameter       | Default | Description               | Example                     |
+| --------------- | ------- | ------------------------- | --------------------------- |
+| progress        | 0       | Progress value (0-100)    | `progress=75`               |
+| color           | red     | Color of the progress bar | `color=blue`                |
+| backgroundColor | white   | Background color          | `backgroundColor=lightgray` |
+| height          | 20      | Height in pixels          | `height=30`                 |
+| width           | 100     | Width in pixels           | `width=200`                 |
+| borderRadius    | 50      | Border radius in pixels   | `borderRadius=10`           |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Common Use Cases
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### GitHub README Progress
+```markdown
+![Project Status](https://progress-bars-eight.vercel.app/bar?progress=80&color=green)
+```
+
+### Documentation Status
+```markdown
+Documentation: ![60% Complete](https://progress-bars-eight.vercel.app/bar?progress=60&color=orange)
+```
+
+### Project Milestones
+```markdown
+Phase 1: ![Complete](https://progress-bars-eight.vercel.app/bar?progress=100&color=green)
+Phase 2: ![In Progress](https://progress-bars-eight.vercel.app/bar?progress=45&color=blue)
+Phase 3: ![Not Started](https://progress-bars-eight.vercel.app/bar?progress=0&color=gray)
+```
+
+## Tips
+- Use URL encoding for special characters in colors (e.g., `%23ff0000` for `#ff0000`)
+- The service is stateless - perfect for dynamic content
+- Works in any environment that can display images from URLs
+
+## Contributing
+
+Feel free to contribute! Open issues and PRs are welcome.
+
+## License
+
+MIT License - Use it anywhere you like!

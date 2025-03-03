@@ -43,13 +43,16 @@ export default function Home() {
   }, [copied])
 
   const generateUrl = () => {
+    // Ensure width is within reasonable constraints
+    const safeWidth = Math.max(50, Math.min(params.width, 2000));
+    
     const baseUrl = 'https://progress-bars-eight.vercel.app/bar'
     const queryParams = new URLSearchParams({
       progress: params.progress.toString(),
       color: params.color,
       backgroundColor: params.backgroundColor,
       height: params.height.toString(),
-      width: params.width.toString(),
+      width: safeWidth.toString(),
       borderRadius: params.borderRadius.toString(),
       striped: params.striped.toString(),
       animated: params.animated.toString(),
@@ -80,7 +83,7 @@ export default function Home() {
 
   return (
     <div className={cn(
-      "min-h-screen transition-colors duration-300",
+      "min-h-screen transition-colors duration-300 overflow-x-hidden",
       theme === 'light' 
         ? "bg-gradient-to-br from-blue-50 via-white to-purple-50" 
         : "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
@@ -109,8 +112,8 @@ export default function Home() {
         </div>
       )}
 
-      <div className="relative max-w-6xl mx-auto p-4 sm:p-8">
-        <div className="absolute top-4 right-4">
+      <div className="relative max-w-6xl mx-auto px-4 py-4 sm:px-6 md:px-8">
+        <div className="absolute top-4 right-4 z-10">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -124,30 +127,30 @@ export default function Home() {
           </Button>
         </div>
 
-        <div className="text-center space-y-4 py-10">
-          <div className="inline-flex items-center gap-2 mb-2">
-            <Sparkles className={cn("h-6 w-6", theme === 'light' ? "text-blue-500" : "text-blue-400")} />
+        <div className="text-center space-y-2 sm:space-y-4 py-6 sm:py-10">
+          <div className="inline-flex items-center gap-2 mb-2 flex-wrap justify-center">
+            <Sparkles className={cn("h-5 w-5 sm:h-6 sm:w-6", theme === 'light' ? "text-blue-500" : "text-blue-400")} />
             <h1 className={cn(
-              "text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r pb-2",
+              "text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r pb-2",
               theme === 'light' 
                 ? "from-blue-600 to-purple-600" 
                 : "from-blue-400 to-purple-400"
             )}>
               Progress Bar Generator
             </h1>
-            <Sparkles className={cn("h-6 w-6", theme === 'light' ? "text-purple-500" : "text-purple-400")} />
+            <Sparkles className={cn("h-5 w-5 sm:h-6 sm:w-6", theme === 'light' ? "text-purple-500" : "text-purple-400")} />
           </div>
           <p className={cn(
-            "text-xl max-w-2xl mx-auto",
+            "text-lg sm:text-xl max-w-2xl mx-auto px-2",
             theme === 'light' ? "text-gray-600" : "text-gray-300"
           )}>
             Create beautiful, customizable progress bars for your projects with just a few clicks
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
+        <div className="grid grid-cols-1 gap-6 md:gap-8 mt-4 sm:mt-8">
           <Card className={cn(
-            "lg:col-span-5 p-6 space-y-6 border-0 shadow-xl",
+            "p-4 sm:p-6 space-y-4 sm:space-y-6 border-0 shadow-xl",
             theme === 'light' 
               ? "bg-white/80 backdrop-blur-sm" 
               : "bg-gray-800/80 backdrop-blur-sm border-gray-700"
@@ -155,506 +158,560 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <Sliders className={cn("h-5 w-5", theme === 'light' ? "text-blue-500" : "text-blue-400")} />
               <h2 className={cn(
-                "text-2xl font-semibold",
+                "text-xl sm:text-2xl font-semibold",
                 theme === 'light' ? "text-gray-800" : "text-gray-100"
               )}>
                 Customize
               </h2>
             </div>
             
-            <div className="space-y-5">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              <div className="space-y-5 md:col-span-5">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label 
+                      htmlFor="progress" 
+                      className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                    >
+                      Progress
+                    </Label>
+                    <span className={cn(
+                      "text-sm font-medium px-2 py-1 rounded-md",
+                      theme === 'light' 
+                        ? "bg-blue-100 text-blue-700" 
+                        : "bg-blue-900/30 text-blue-300"
+                    )}>
+                      {params.progress}%
+                    </span>
+                  </div>
+                  
+                  <Slider
+                    id="progress"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[params.progress]}
+                    onValueChange={(value: number[]) => setParams({ ...params, progress: value[0] })}
+                    className={cn(
+                      "mt-2",
+                      theme === 'light' 
+                        ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md" 
+                        : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-3">
                   <Label 
-                    htmlFor="progress" 
                     className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
                   >
-                    Progress
+                    Preset Colors
                   </Label>
-                  <span className={cn(
-                    "text-sm font-medium px-2 py-1 rounded-md",
-                    theme === 'light' 
-                      ? "bg-blue-100 text-blue-700" 
-                      : "bg-blue-900/30 text-blue-300"
-                  )}>
-                    {params.progress}%
-                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {presetColors.map((preset) => (
+                      <Button
+                        key={preset.name}
+                        variant="ghost"
+                        className={cn(
+                          "h-auto py-2 px-3 flex flex-col items-center gap-1 transition-all hover:scale-105",
+                          theme === 'light' ? "hover:bg-gray-50" : "hover:bg-gray-700"
+                        )}
+                        onClick={() => setParams({ 
+                          ...params, 
+                          color: preset.color
+                        })}
+                      >
+                        <div className="w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                          <div className="h-full rounded-full" style={{ width: '70%', backgroundColor: preset.color }}></div>
+                        </div>
+                        <span className={cn(
+                          "text-xs font-medium",
+                          theme === 'light' ? "text-gray-700" : "text-gray-300"
+                        )}>
+                          {preset.name}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-                
-                <Slider
-                  id="progress"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={[params.progress]}
-                  onValueChange={(value: number[]) => setParams({ ...params, progress: value[0] })}
-                  className={cn(
-                    "mt-2",
-                    theme === 'light' 
-                      ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md" 
-                      : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
-                  )}
-                />
-              </div>
 
-              <div className="space-y-3">
-                <Label 
-                  className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
-                >
-                  Preset Colors
-                </Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {presetColors.map((preset) => (
-                    <Button
-                      key={preset.name}
-                      variant="ghost"
-                      className={cn(
-                        "h-auto py-2 px-3 flex flex-col items-center gap-1 transition-all hover:scale-105",
-                        theme === 'light' ? "hover:bg-gray-50" : "hover:bg-gray-700"
-                      )}
-                      onClick={() => setParams({ 
-                        ...params, 
-                        color: preset.color
-                      })}
-                    >
-                      <div className="w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                        <div className="h-full rounded-full" style={{ width: '70%', backgroundColor: preset.color }}></div>
-                      </div>
-                      <span className={cn(
-                        "text-xs font-medium",
-                        theme === 'light' ? "text-gray-700" : "text-gray-300"
-                      )}>
-                        {preset.name}
-                      </span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label 
-                  htmlFor="color"
-                  className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
-                >
-                  Bar Color
-                </Label>
-                <div className="flex gap-2 mt-1">
-                  <div 
-                    className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
-                    style={{ borderColor: theme === 'light' ? '#e2e8f0' : '#4b5563' }}
-                    onClick={() => document.getElementById('colorPicker')?.click()}
+                <div>
+                  <Label 
+                    htmlFor="color"
+                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
                   >
-                    <div className="absolute inset-0" style={{ backgroundColor: params.color }}></div>
+                    Bar Color
+                  </Label>
+                  <div className="flex gap-2 mt-1">
+                    <div 
+                      className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
+                      style={{ borderColor: theme === 'light' ? '#e2e8f0' : '#4b5563' }}
+                      onClick={() => document.getElementById('colorPicker')?.click()}
+                    >
+                      <div className="absolute inset-0" style={{ backgroundColor: params.color }}></div>
+                      <Input
+                        id="colorPicker"
+                        type="color"
+                        value={params.color}
+                        onChange={(e) => setParams({ ...params, color: e.target.value })}
+                        className="absolute opacity-0 cursor-pointer w-full h-full"
+                        aria-label="Select color"
+                      />
+                    </div>
                     <Input
-                      id="colorPicker"
-                      type="color"
+                      type="text"
                       value={params.color}
                       onChange={(e) => setParams({ ...params, color: e.target.value })}
-                      className="absolute opacity-0 cursor-pointer w-full h-full"
-                      aria-label="Select color"
+                      className={cn(
+                        "flex-1",
+                        theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                      )}
                     />
                   </div>
-                  <Input
-                    type="text"
-                    value={params.color}
-                    onChange={(e) => setParams({ ...params, color: e.target.value })}
-                    className={cn(
-                      "flex-1",
-                      theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
-                    )}
-                  />
                 </div>
-              </div>
 
-              <div>
-                <Label 
-                  htmlFor="backgroundColor"
-                  className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
-                >
-                  Background Color
-                </Label>
-                <div className="flex gap-2 mt-1">
-                  <div 
-                    className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
-                    style={{ borderColor: theme === 'light' ? '#e2e8f0' : '#4b5563' }}
-                    onClick={() => document.getElementById('backgroundColorPicker')?.click()}
+                <div>
+                  <Label 
+                    htmlFor="backgroundColor"
+                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
                   >
-                    <div className="absolute inset-0" style={{ backgroundColor: params.backgroundColor }}></div>
+                    Background Color
+                  </Label>
+                  <div className="flex gap-2 mt-1">
+                    <div 
+                      className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
+                      style={{ borderColor: theme === 'light' ? '#e2e8f0' : '#4b5563' }}
+                      onClick={() => document.getElementById('backgroundColorPicker')?.click()}
+                    >
+                      <div className="absolute inset-0" style={{ backgroundColor: params.backgroundColor }}></div>
+                      <Input
+                        id="backgroundColorPicker"
+                        type="color"
+                        value={params.backgroundColor}
+                        onChange={(e) => setParams({ ...params, backgroundColor: e.target.value })}
+                        className="absolute opacity-0 cursor-pointer w-full h-full"
+                        aria-label="Select background color"
+                      />
+                    </div>
                     <Input
-                      id="backgroundColorPicker"
-                      type="color"
+                      type="text"
                       value={params.backgroundColor}
                       onChange={(e) => setParams({ ...params, backgroundColor: e.target.value })}
-                      className="absolute opacity-0 cursor-pointer w-full h-full"
-                      aria-label="Select background color"
+                      className={cn(
+                        "flex-1",
+                        theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                      )}
                     />
                   </div>
-                  <Input
-                    type="text"
-                    value={params.backgroundColor}
-                    onChange={(e) => setParams({ ...params, backgroundColor: e.target.value })}
-                    className={cn(
-                      "flex-1",
-                      theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label 
-                    htmlFor="height"
-                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
-                  >
-                    Height (px)
-                  </Label>
-                  <Input
-                    id="height"
-                    type="number"
-                    value={params.height}
-                    onChange={(e) => setParams({ ...params, height: parseInt(e.target.value) })}
-                    className={cn(
-                      "mt-1",
-                      theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
-                    )}
-                  />
                 </div>
 
-                <div>
-                  <Label 
-                    htmlFor="width"
-                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
-                  >
-                    Width (px)
-                  </Label>
-                  <Input
-                    id="width"
-                    type="number"
-                    value={params.width}
-                    onChange={(e) => setParams({ ...params, width: parseInt(e.target.value) })}
-                    className={cn(
-                      "mt-1",
-                      theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
-                    )}
-                  />
-                </div>
-
-                <div>
-                  <Label 
-                    htmlFor="borderRadius"
-                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
-                  >
-                    Radius (px)
-                  </Label>
-                  <Input
-                    id="borderRadius"
-                    type="number"
-                    value={params.borderRadius}
-                    onChange={(e) => setParams({ ...params, borderRadius: parseInt(e.target.value) })}
-                    className={cn(
-                      "mt-1",
-                      theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3 mt-4">
-                <Label 
-                  className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
-                >
-                  Effects
-                </Label>
-                <div className="flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="relative flex items-center">
-                      <input
-                        type="checkbox"
-                        id="striped"
-                        checked={params.striped}
-                        onChange={(e) => setParams({ ...params, striped: e.target.checked })}
-                        className={cn(
-                          "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
-                          "focus:outline-none focus:ring-2 focus:ring-offset-2",
-                          theme === 'light' 
-                            ? "border-gray-300 focus:ring-blue-400 focus:ring-offset-white" 
-                            : "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
-                        )}
-                      />
-                      <svg
-                        className={cn(
-                          "pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity",
-                          theme === 'light' ? "text-blue-600" : "text-blue-400"
-                        )}
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
                     <Label 
-                      htmlFor="striped"
+                      htmlFor="height"
                       className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
                     >
-                      Striped
+                      Height (px)
                     </Label>
+                    <Input
+                      id="height"
+                      type="number"
+                      value={params.height}
+                      onChange={(e) => setParams({ ...params, height: parseInt(e.target.value) })}
+                      className={cn(
+                        "mt-1",
+                        theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                      )}
+                    />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="relative flex items-center">
-                      <input
-                        type="checkbox"
-                        id="animated"
-                        checked={params.animated}
-                        onChange={(e) => setParams({ ...params, animated: e.target.checked })}
-                        className={cn(
-                          "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
-                          "focus:outline-none focus:ring-2 focus:ring-offset-2",
-                          theme === 'light' 
-                            ? "border-gray-300 focus:ring-blue-400 focus:ring-offset-white" 
-                            : "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
-                        )}
-                      />
-                      <svg
-                        className={cn(
-                          "pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity",
-                          theme === 'light' ? "text-blue-600" : "text-blue-400"
-                        )}
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
+
+                  <div>
                     <Label 
-                      htmlFor="animated"
+                      htmlFor="width"
                       className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
                     >
-                      Animated
+                      Width (px)
                     </Label>
+                    <div className="relative">
+                      <Input
+                        id="width"
+                        type="number"
+                        min={50}
+                        max={2000}
+                        value={params.width}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value);
+                          // Enforce min/max constraints
+                          if (value < 50) {
+                            setParams({ ...params, width: 50 });
+                          } else if (value > 2000) {
+                            setParams({ ...params, width: 2000 });
+                          } else {
+                            setParams({ ...params, width: value });
+                          }
+                        }}
+                        className={cn(
+                          "mt-1",
+                          theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                        )}
+                      />
+                      {params.width > 1000 && (
+                        <div className={cn(
+                          "absolute right-2 top-1/2 transform -translate-y-1/2 text-xs font-medium rounded-full px-1.5 py-0.5",
+                          theme === 'light' ? "bg-amber-100 text-amber-800" : "bg-amber-900/30 text-amber-400"
+                        )}>
+                          Large
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label 
+                      htmlFor="borderRadius"
+                      className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                    >
+                      Radius (px)
+                    </Label>
+                    <Input
+                      id="borderRadius"
+                      type="number"
+                      value={params.borderRadius}
+                      onChange={(e) => setParams({ ...params, borderRadius: parseInt(e.target.value) })}
+                      className={cn(
+                        "mt-1",
+                        theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3 mt-4">
+                  <Label 
+                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                  >
+                    Effects
+                  </Label>
+                  <div className="flex gap-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="relative flex items-center">
+                        <input
+                          type="checkbox"
+                          id="striped"
+                          checked={params.striped}
+                          onChange={(e) => setParams({ ...params, striped: e.target.checked })}
+                          className={cn(
+                            "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
+                            "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                            theme === 'light' 
+                              ? "border-gray-300 focus:ring-blue-400 focus:ring-offset-white" 
+                              : "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
+                          )}
+                        />
+                        <svg
+                          className={cn(
+                            "pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity",
+                            theme === 'light' ? "text-blue-600" : "text-blue-400"
+                          )}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <Label 
+                        htmlFor="striped"
+                        className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                      >
+                        Striped
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="relative flex items-center">
+                        <input
+                          type="checkbox"
+                          id="animated"
+                          checked={params.animated}
+                          onChange={(e) => setParams({ ...params, animated: e.target.checked })}
+                          className={cn(
+                            "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
+                            "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                            theme === 'light' 
+                              ? "border-gray-300 focus:ring-blue-400 focus:ring-offset-white" 
+                              : "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
+                          )}
+                        />
+                        <svg
+                          className={cn(
+                            "pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity",
+                            theme === 'light' ? "text-blue-600" : "text-blue-400"
+                          )}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <Label 
+                        htmlFor="animated"
+                        className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                      >
+                        Animated
+                      </Label>
+                    </div>
+                  </div>
+                  
+                  {params.animated && (
+                    <div className="mt-4 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label 
+                          htmlFor="animationSpeed"
+                          className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                        >
+                          Animation Speed
+                        </Label>
+                        <span className={cn(
+                          "text-sm font-medium",
+                          theme === 'light' ? "text-gray-600" : "text-gray-300"
+                        )}>
+                          {params.animationSpeed.toFixed(1)}x
+                        </span>
+                      </div>
+                      <Slider
+                        id="animationSpeed"
+                        min={0.1}
+                        max={5}
+                        step={0.1}
+                        value={[params.animationSpeed]}
+                        onValueChange={(value) => setParams({ ...params, animationSpeed: value[0] })}
+                        className={cn(
+                          "my-2", 
+                          theme === 'light' 
+                            ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500"
+                            : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400"
+                        )}
+                      />
+                      <div className="flex justify-between text-xs">
+                        <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Slower</span>
+                        <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Faster</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="md:col-span-7 space-y-6">
+                <div className="w-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Palette className={cn("h-5 w-5", theme === 'light' ? "text-purple-500" : "text-purple-400")} />
+                    <h2 className={cn(
+                      "text-xl sm:text-2xl font-semibold",
+                      theme === 'light' ? "text-gray-800" : "text-gray-100"
+                    )}>
+                      Preview
+                    </h2>
+                  </div>
+                  
+                  <div className={cn(
+                    "rounded-lg transition-all border overflow-hidden",
+                    theme === 'light' 
+                      ? "bg-gray-50 border-gray-100" 
+                      : "bg-gray-900 border-gray-700"
+                  )}>
+                    <div 
+                      className="p-4 sm:p-6 md:p-10 overflow-auto"
+                      style={{ 
+                        overflowX: 'auto',
+                        WebkitOverflowScrolling: 'touch'
+                      }}
+                    >
+                      <div style={{ 
+                        width: 'fit-content', 
+                        minWidth: '100%',
+                        display: 'flex',
+                        justifyContent: 'center'
+                      }}>
+                        <iframe
+                          src={generateUrl()}
+                          width={params.width}
+                          height={params.height}
+                          style={{
+                            border: 'none',
+                            overflow: 'hidden',
+                            boxShadow: theme === 'light' 
+                              ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' 
+                              : '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)'
+                          }}
+                          title="Progress Bar Preview"
+                          loading="eager"
+                        />
+                      </div>
+                    </div>
+                    {params.width > 500 && (
+                      <div className={cn(
+                        "py-2 px-4 text-xs text-center border-t",
+                        theme === 'light' 
+                          ? "text-gray-500 border-gray-100" 
+                          : "text-gray-400 border-gray-700"
+                      )}>
+                        <span>Scroll horizontally to view the entire progress bar →</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
-                {params.animated && (
-                  <div className="mt-4 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label 
-                        htmlFor="animationSpeed"
-                        className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
-                      >
-                        Animation Speed
-                      </Label>
-                      <span className={cn(
-                        "text-sm font-medium",
-                        theme === 'light' ? "text-gray-600" : "text-gray-300"
-                      )}>
-                        {params.animationSpeed.toFixed(1)}x
-                      </span>
-                    </div>
-                    <Slider
-                      id="animationSpeed"
-                      min={0.1}
-                      max={5}
-                      step={0.1}
-                      value={[params.animationSpeed]}
-                      onValueChange={(value) => setParams({ ...params, animationSpeed: value[0] })}
-                      className={cn(
-                        theme === 'light' ? "py-1" : "py-1"
-                      )}
-                    />
-                    <div className="flex justify-between text-xs mt-1">
-                      <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Slower</span>
-                      <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Faster</span>
-                    </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Code className={cn("h-5 w-5", theme === 'light' ? "text-green-500" : "text-green-400")} />
+                    <h2 className={cn(
+                      "text-xl sm:text-2xl font-semibold",
+                      theme === 'light' ? "text-gray-800" : "text-gray-100"
+                    )}>
+                      Integration
+                    </h2>
                   </div>
-                )}
+                  
+                  {params.width > 500 && (
+                    <div className={cn(
+                      "mb-4 p-3 text-sm rounded-md",
+                      theme === 'light' 
+                        ? "bg-amber-50 text-amber-800 border border-amber-200" 
+                        : "bg-amber-900/20 text-amber-300 border border-amber-800/30"
+                    )}>
+                      <div className="flex gap-2 items-center">
+                        <Info className="h-4 w-4 flex-shrink-0" />
+                        <p>You've set a large width ({params.width}px). Consider using a smaller width for better embedding experience or ensure your container can handle the size.</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <Tabs 
+                    defaultValue="url" 
+                    className="w-full"
+                  >
+                    <TabsList 
+                      className={cn(
+                        "grid w-full grid-cols-3 mb-6",
+                        theme === 'light' 
+                          ? "bg-gray-100" 
+                          : "bg-gray-700"
+                      )}
+                    >
+                      <TabsTrigger 
+                        value="url"
+                        className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
+                      >
+                        URL
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="markdown"
+                        className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
+                      >
+                        Markdown
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="html"
+                        className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
+                      >
+                        HTML
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="url" className="space-y-2">
+                      <div className="relative">
+                        <Input 
+                          value={generateUrl()} 
+                          readOnly
+                          className={cn(
+                            "pr-10",
+                            theme === 'light' 
+                              ? "bg-gray-50" 
+                              : "bg-gray-900 border-gray-700 text-gray-200"
+                          )}
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="absolute right-2 top-1/2 -translate-y-1/2"
+                          onClick={() => copyToClipboard(generateUrl(), 'url')}
+                        >
+                          {copied === 'url' ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
+                          )}
+                        </Button>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="markdown" className="space-y-2">
+                      <div className="relative">
+                        <Input 
+                          value={`![Progress Bar](${generateUrl()})`} 
+                          readOnly
+                          className={cn(
+                            "pr-10",
+                            theme === 'light' 
+                              ? "bg-gray-50" 
+                              : "bg-gray-900 border-gray-700 text-gray-200"
+                          )}
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="absolute right-2 top-1/2 -translate-y-1/2"
+                          onClick={() => copyToClipboard(`![Progress Bar](${generateUrl()})`, 'markdown')}
+                        >
+                          {copied === 'markdown' ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
+                          )}
+                        </Button>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="html" className="space-y-2">
+                      <div className="relative">
+                        <Input 
+                          value={`<img src="${generateUrl()}" alt="Progress Bar">`} 
+                          readOnly
+                          className={cn(
+                            "pr-10",
+                            theme === 'light' 
+                              ? "bg-gray-50" 
+                              : "bg-gray-900 border-gray-700 text-gray-200"
+                          )}
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="absolute right-2 top-1/2 -translate-y-1/2"
+                          onClick={() => copyToClipboard(`<img src="${generateUrl()}" alt="Progress Bar">`, 'html')}
+                        >
+                          {copied === 'html' ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
+                          )}
+                        </Button>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
               </div>
             </div>
           </Card>
-
-          <div className="lg:col-span-7 space-y-8">
-            <Card className={cn(
-              "p-6 border-0 shadow-xl overflow-hidden",
-              theme === 'light' 
-                ? "bg-white/80 backdrop-blur-sm" 
-                : "bg-gray-800/80 backdrop-blur-sm border-gray-700"
-            )}>
-              <div className="flex items-center gap-2 mb-6">
-                <Palette className={cn("h-5 w-5", theme === 'light' ? "text-purple-500" : "text-purple-400")} />
-                <h2 className={cn(
-                  "text-2xl font-semibold",
-                  theme === 'light' ? "text-gray-800" : "text-gray-100"
-                )}>
-                  Preview
-                </h2>
-              </div>
-              
-              <div className={cn(
-                "flex items-center justify-center p-10 rounded-lg transition-all",
-                theme === 'light' 
-                  ? "bg-gray-50 border border-gray-100" 
-                  : "bg-gray-900 border border-gray-700"
-              )}>
-                <div className="transform hover:scale-105 transition-transform duration-300">
-                  <iframe
-                    src={generateUrl()}
-                    width={params.width}
-                    height={params.height}
-                    style={{
-                      border: 'none',
-                      overflow: 'hidden',
-                      boxShadow: theme === 'light' 
-                        ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' 
-                        : '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)'
-                    }}
-                    title="Progress Bar Preview"
-                    loading="eager"
-                  />
-                </div>
-              </div>
-            </Card>
-
-            <Card className={cn(
-              "p-6 border-0 shadow-xl",
-              theme === 'light' 
-                ? "bg-white/80 backdrop-blur-sm" 
-                : "bg-gray-800/80 backdrop-blur-sm border-gray-700"
-            )}>
-              <div className="flex items-center gap-2 mb-6">
-                <Code className={cn("h-5 w-5", theme === 'light' ? "text-green-500" : "text-green-400")} />
-                <h2 className={cn(
-                  "text-2xl font-semibold",
-                  theme === 'light' ? "text-gray-800" : "text-gray-100"
-                )}>
-                  Embed
-                </h2>
-              </div>
-              
-              <Tabs 
-                defaultValue="url" 
-                className="w-full"
-              >
-                <TabsList 
-                  className={cn(
-                    "grid w-full grid-cols-3 mb-6",
-                    theme === 'light' 
-                      ? "bg-gray-100" 
-                      : "bg-gray-700"
-                  )}
-                >
-                  <TabsTrigger 
-                    value="url"
-                    className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
-                  >
-                    URL
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="markdown"
-                    className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
-                  >
-                    Markdown
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="html"
-                    className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
-                  >
-                    HTML
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="url" className="space-y-2">
-                  <div className="relative">
-                    <Input 
-                      value={generateUrl()} 
-                      readOnly
-                      className={cn(
-                        "pr-10",
-                        theme === 'light' 
-                          ? "bg-gray-50" 
-                          : "bg-gray-900 border-gray-700 text-gray-200"
-                      )}
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="absolute right-2 top-1/2 -translate-y-1/2"
-                      onClick={() => copyToClipboard(generateUrl(), 'url')}
-                    >
-                      {copied === 'url' ? (
-                        <Check className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
-                      )}
-                    </Button>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="markdown" className="space-y-2">
-                  <div className="relative">
-                    <Input 
-                      value={`![Progress Bar](${generateUrl()})`} 
-                      readOnly
-                      className={cn(
-                        "pr-10",
-                        theme === 'light' 
-                          ? "bg-gray-50" 
-                          : "bg-gray-900 border-gray-700 text-gray-200"
-                      )}
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="absolute right-2 top-1/2 -translate-y-1/2"
-                      onClick={() => copyToClipboard(`![Progress Bar](${generateUrl()})`, 'markdown')}
-                    >
-                      {copied === 'markdown' ? (
-                        <Check className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
-                      )}
-                    </Button>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="html" className="space-y-2">
-                  <div className="relative">
-                    <Input 
-                      value={`<img src="${generateUrl()}" alt="Progress Bar">`} 
-                      readOnly
-                      className={cn(
-                        "pr-10",
-                        theme === 'light' 
-                          ? "bg-gray-50" 
-                          : "bg-gray-900 border-gray-700 text-gray-200"
-                      )}
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="absolute right-2 top-1/2 -translate-y-1/2"
-                      onClick={() => copyToClipboard(`<img src="${generateUrl()}" alt="Progress Bar">`, 'html')}
-                    >
-                      {copied === 'html' ? (
-                        <Check className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
-                      )}
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </Card>
-          </div>
         </div>
 
         <Card className={cn(

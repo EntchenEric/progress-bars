@@ -34,10 +34,6 @@ function Progress({
         style={{
           transform: `translateX(-${100 - (value || 0)}%)`,
           backgroundColor: color,
-          backgroundImage: stripes
-            ? "linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent)"
-          : undefined,
-          backgroundSize: stripes ? "1rem 1rem" : undefined,
         }}
       />
     </ProgressPrimitive.Root>

@@ -4,7 +4,7 @@ A modern web service to generate and embed customizable progress bars anywhere! 
 
 🌐 **[Try it live](https://progress-bars-eight.vercel.app)**
 
-![Progress Bar Generator](https://progress-bars-eight.vercel.app/bar?progress=75&color=%232563eb&height=20&width=200&borderRadius=50)
+![Progress Bar Generator](https://progress-bars-eight.vercel.app/bar?progress=75&color=%232563eb&height=20&width=200&borderRadius=10)
 
 ## Features
 
@@ -12,7 +12,7 @@ A modern web service to generate and embed customizable progress bars anywhere! 
 - **Live Preview**: See your changes in real-time
 - **Dark/Light Mode**: Switch between themes for comfortable editing
 - **Preset Colors**: Choose from a selection of beautiful preset colors
-- **Custom Styling**: Adjust progress, color, height, width, and border radius
+- **Custom Styling**: Adjust progress, color, background color, height, width, and border radius
 - **Special Effects**: Add striped and animated effects to your progress bars
 - **Easy Embedding**: Copy URL, Markdown, or HTML code with a single click
 
@@ -35,7 +35,7 @@ https://progress-bars-eight.vercel.app/bar?progress=75
 
 ### Custom Styled Progress Bar
 ```
-https://progress-bars-eight.vercel.app/bar?progress=80&color=%232563eb&height=30&width=200&borderRadius=10&striped=true&animated=true
+https://progress-bars-eight.vercel.app/bar?progress=80&color=%232563eb&backgroundColor=%23f8fafc&height=30&width=200&borderRadius=10&striped=true&animated=true
 ```
 
 ### Use in Markdown
@@ -56,9 +56,10 @@ All parameters are optional and have sensible defaults:
 | --------------- | ------- | ---------------------------- | --------------------------- |
 | progress        | 0       | Progress value (0-100)       | `progress=75`               |
 | color           | #2563eb | Color of the progress bar    | `color=%232563eb`           |
+| backgroundColor | #f3f4f6 | Background color of the bar  | `backgroundColor=%23f8fafc` |
 | height          | 20      | Height in pixels             | `height=30`                 |
 | width           | 200     | Width in pixels              | `width=200`                 |
-| borderRadius    | 50      | Border radius in pixels      | `borderRadius=10`           |
+| borderRadius    | 10      | Border radius in pixels      | `borderRadius=20`           |
 | striped         | false   | Add striped effect           | `striped=true`              |
 | animated        | false   | Add animation to the bar     | `animated=true`             |
 

@@ -15,9 +15,10 @@ export default function Home() {
   const [params, setParams] = useState({
     progress: 75,
     color: '#2563eb',
+    backgroundColor: '#f3f4f6',
     height: 20,
     width: 200,
-    borderRadius: 50,
+    borderRadius: 10,
     striped: false,
     animated: false,
   })
@@ -47,6 +48,7 @@ export default function Home() {
     const queryParams = new URLSearchParams({
       progress: params.progress.toString(),
       color: params.color,
+      backgroundColor: params.backgroundColor,
       height: params.height.toString(),
       width: params.width.toString(),
       borderRadius: params.borderRadius.toString(),
@@ -264,6 +266,41 @@ export default function Home() {
                 </div>
               </div>
 
+              <div>
+                <Label 
+                  htmlFor="backgroundColor"
+                  className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                >
+                  Background Color
+                </Label>
+                <div className="flex gap-2 mt-1">
+                  <div 
+                    className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
+                    style={{ borderColor: theme === 'light' ? '#e2e8f0' : '#4b5563' }}
+                    onClick={() => document.getElementById('backgroundColorPicker')?.click()}
+                  >
+                    <div className="absolute inset-0" style={{ backgroundColor: params.backgroundColor }}></div>
+                    <Input
+                      id="backgroundColorPicker"
+                      type="color"
+                      value={params.backgroundColor}
+                      onChange={(e) => setParams({ ...params, backgroundColor: e.target.value })}
+                      className="absolute opacity-0 cursor-pointer w-full h-full"
+                      aria-label="Select background color"
+                    />
+                  </div>
+                  <Input
+                    type="text"
+                    value={params.backgroundColor}
+                    onChange={(e) => setParams({ ...params, backgroundColor: e.target.value })}
+                    className={cn(
+                      "flex-1",
+                      theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                    )}
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label 
@@ -435,19 +472,19 @@ export default function Home() {
                   : "bg-gray-900 border border-gray-700"
               )}>
                 <div className="transform hover:scale-105 transition-transform duration-300">
-                  <Progress
-                    value={params.progress}
-                    color={params.color}
-                    striped={params.striped}
-                    animated={params.animated}
+                  <iframe
+                    src={generateUrl()}
+                    width={params.width}
+                    height={params.height}
                     style={{
-                      height: `${params.height}px`,
-                      width: `${params.width}px`,
-                      borderRadius: `${params.borderRadius}px`,
+                      border: 'none',
+                      overflow: 'hidden',
                       boxShadow: theme === 'light' 
                         ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' 
                         : '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)'
                     }}
+                    title="Progress Bar Preview"
+                    loading="eager"
                   />
                 </div>
               </div>
@@ -639,6 +676,14 @@ export default function Home() {
                     theme === 'light' ? "bg-blue-500" : "bg-blue-400"
                   )}></div>
                   <span><strong>Color</strong> - The color of the progress bar</span>
+                </div>
+                
+                <div className="flex items-start gap-2">
+                  <div className={cn(
+                    "w-2 h-2 rounded-full mt-1.5",
+                    theme === 'light' ? "bg-blue-500" : "bg-blue-400"
+                  )}></div>
+                  <span><strong>Background Color</strong> - The color of the progress bar's background</span>
                 </div>
                 
                 <div className="flex items-start gap-2">

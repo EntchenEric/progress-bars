@@ -2,8 +2,9 @@
  
 import { useSearchParams } from 'next/navigation'
 import { Progress } from '@/components/ui/progress'
+import { Suspense } from 'react'
 
-export default function Home() {
+function ProgressBar() {
   const searchParams = useSearchParams()
 
   const color = searchParams.get('color') ?? 'red'
@@ -22,5 +23,13 @@ export default function Home() {
         style={{ height: `${height}px`, width: `${width}px`, borderRadius: `${borderRadius}px` }}
       />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProgressBar />
+    </Suspense>
   );
 }

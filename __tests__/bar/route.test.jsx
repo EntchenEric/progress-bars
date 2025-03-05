@@ -87,8 +87,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
 
-    expect(content).toContain('width="0"');
-    expect(content).toContain('height="0"');
+    expect(content).toContain('width="200"');
+    expect(content).toContain('height="50"');
   });
 
   it('clamps progress value between 0 and 100', async () => {
@@ -169,8 +169,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
 
-    expect(content).toContain('width="0"');
-    expect(content).toContain('height="0"');
+    expect(content).toContain('width="200"');
+    expect(content).toContain('height="50"');
     expect(content).toContain('stop-color:#2563eb');
   });
 
@@ -285,7 +285,36 @@ describe('GET /bar', () => {
     
     expect(content).toContain('stop-color:#2563eb');
     expect(content).toContain('fill="#f3f4f6"');
-    expect(content).toMatch(/width="0"/);
-    expect(content).toMatch(/height="0"/);
+    expect(content).toMatch(/width="200"/);
+    expect(content).toMatch(/height="50"/);
+  });
+
+  it('enforces minimum size constraints', async () => {
+    const { GET } = require('../../app/bar/route');
+    const req = createMockRequest({
+      height: '-50',
+      width: '-100',
+    });
+    const res = await GET(req);
+    const content = await res.text();
+    
+    expect(content).toMatch(/width="200"/);
+    expect(content).toMatch(/height="50"/);
+
+    expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
+  });
+
+  it('enforces minimum progress constraints', async () => {
+    const { GET } = require('../../app/bar/route');
+    const req = createMockRequest({
+      progress: '-50'
+    });
+    const res = await GET(req);
+    const content = await res.text();
+    
+    expect(content).toMatch(/width="200"/);
+    expect(content).toMatch(/height="50"/);
+
+    expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
   });
 });

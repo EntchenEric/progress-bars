@@ -15,18 +15,31 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Progress Bar Generator',
   description: 'Create beautiful, customizable progress bars for your projects with just a few clicks',
+  icons: {
+    icon: '/icon.ico',
+    apple: '/icon.png',
+  },
   openGraph: {
     title: 'Progress Bar Generator',
     description: 'Create beautiful, customizable progress bars for your projects with just a few clicks',
     url: 'https://progress-bars-eight.vercel.app',
     siteName: 'Progress Bar Generator',
     type: 'website',
+    images: [
+      {
+        url: '/icon.png',
+        width: 512,
+        height: 512,
+        alt: 'Progress Bar Generator Logo',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Progress Bar Generator',
     description: 'Create beautiful, customizable progress bars for your projects with just a few clicks',
     creator: '@EntchenEric',
+    images: ['/icon.png'],
   },
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },

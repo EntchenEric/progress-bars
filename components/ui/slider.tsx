@@ -8,15 +8,30 @@ import { cn } from "@/lib/utils"
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
->(({ className, ...props }, ref) => (
+>(({ className, onValueChange, value, min, max, step, ...props }, ref) => (
   <SliderPrimitive.Root
     ref={ref}
     className={cn(
       "relative flex w-full touch-none select-none items-center",
       className
     )}
+    value={value}
+    onValueChange={onValueChange}
+    min={min}
+    max={max}
+    step={step}
     {...props}
   >
+    <input
+      type="range"
+      className="sr-only"
+      min={min}
+      max={max}
+      step={step}
+      value={value?.[0]}
+      onChange={(e) => onValueChange?.([Number(e.target.value)])}
+      data-testid="slider-input"
+    />
     <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
       <SliderPrimitive.Range className="absolute h-full bg-gradient-to-r from-blue-500 to-purple-500" />
     </SliderPrimitive.Track>

@@ -527,7 +527,11 @@ export default function Home() {
                           type="checkbox"
                           id="striped"
                           checked={params.striped}
-                          onChange={(e) => setParams({ ...params, striped: e.target.checked })}
+                          onChange={(e) => setParams({ 
+                            ...params, 
+                            striped: e.target.checked,
+                            animated: e.target.checked ? params.animated : false // Uncheck animated if striped is unchecked
+                          })}
                           className={cn(
                             "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
                             "focus:outline-none focus:ring-2 focus:ring-offset-2",
@@ -565,7 +569,14 @@ export default function Home() {
                           type="checkbox"
                           id="animated"
                           checked={params.animated}
-                          onChange={(e) => setParams({ ...params, animated: e.target.checked })}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            setParams({ 
+                              ...params, 
+                              animated: isChecked,
+                              striped: isChecked ? true : params.striped // Force striped to be true when animated is checked
+                            });
+                          }}
                           className={cn(
                             "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
                             "focus:outline-none focus:ring-2 focus:ring-offset-2",
@@ -609,9 +620,11 @@ export default function Home() {
                           Animation Speed
                         </Label>
                         <span className={cn(
-                          "text-sm font-medium",
-                          theme === 'light' ? "text-gray-600" : "text-gray-300"
-                        )}>
+                          "text-sm font-medium px-2 py-1 rounded-md",
+                          theme === 'light'
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-blue-900/30 text-blue-300"
+                        )} aria-label="animationSpeed-value">
                           {params.animationSpeed.toFixed(1)}x
                         </span>
                       </div>
@@ -623,11 +636,12 @@ export default function Home() {
                         value={[params.animationSpeed]}
                         onValueChange={(value) => setParams({ ...params, animationSpeed: value[0] })}
                         className={cn(
-                          "my-2",
+                          "mt-2",
                           theme === 'light'
-                            ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500"
-                            : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400"
+                            ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md"
+                            : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
                         )}
+                        aria-label="animation speed"
                       />
                       <div className="flex justify-between text-xs">
                         <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Slower</span>

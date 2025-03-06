@@ -30,6 +30,7 @@ export default function Home() {
   const [highContrast, setHighContrast] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
+  const [ariaMessage, setAriaMessage] = useState('')
 
   useEffect(() => {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -80,7 +81,11 @@ export default function Home() {
     navigator.clipboard.writeText(text)
     setCopied(type)
     setShowConfetti(true)
-    setTimeout(() => setShowConfetti(false), 2000)
+    setAriaMessage(`${type} copied to clipboard`)
+    setTimeout(() => {
+      setShowConfetti(false)
+      setAriaMessage('')
+    }, 2000)
   }
 
   const toggleTheme = () => {
@@ -110,7 +115,7 @@ export default function Home() {
     darkHighContrast?: string
   }) => {
     if (highContrast) {
-      return theme === 'light' 
+      return theme === 'light'
         ? options.lightHighContrast || getHighContrastColors(true)[options.light.split('-')[1] as keyof ReturnType<typeof getHighContrastColors>] || options.light
         : options.darkHighContrast || getHighContrastColors(false)[options.dark.split('-')[1] as keyof ReturnType<typeof getHighContrastColors>] || options.dark
     }
@@ -129,19 +134,24 @@ export default function Home() {
   return (
     <div
       role="main"
+      aria-label="Progress Bar Generator"
       className={cn(
         "min-h-screen transition-colors duration-300 overflow-x-hidden",
         highContrast
           ? getThemeClasses({
-              light: "bg-white",
-              dark: "bg-black"
-            })
+            light: "bg-white",
+            dark: "bg-black"
+          })
           : getThemeClasses({
-              light: "bg-gradient-to-br from-blue-50 via-white to-purple-50",
-              dark: "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
-            })
+            light: "bg-gradient-to-br from-blue-50 via-white to-purple-50",
+            dark: "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+          })
       )}
     >
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {ariaMessage}
+      </div>
+
       <div className={cn(
         "fixed inset-0 overflow-hidden pointer-events-none",
         highContrast ? "hidden" : ""
@@ -174,10 +184,10 @@ export default function Home() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
+                aria-label={`Toggle high contrast mode. Current mode: ${highContrast ? 'high contrast' : 'normal contrast'}`}
                 variant="ghost"
                 size="icon"
                 onClick={toggleHighContrast}
-                aria-label="toggle high contrast"
                 className={cn(
                   "rounded-full transition-all hover:scale-110",
                   highContrast
@@ -203,10 +213,10 @@ export default function Home() {
             </TooltipContent>
           </Tooltip>
           <Button
+            aria-label={`Toggle theme. Current theme: ${theme}`}
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            aria-label="toggle theme"
             className={cn(
               "rounded-full transition-all hover:scale-110",
               highContrast
@@ -237,11 +247,11 @@ export default function Home() {
                   ? "text-black"
                   : "text-white"
                 : cn(
-                    "bg-clip-text text-transparent bg-gradient-to-r",
-                    theme === 'light'
-                      ? "from-blue-600 to-purple-600"
-                      : "from-blue-400 to-purple-400"
-                  )
+                  "bg-clip-text text-transparent bg-gradient-to-r",
+                  theme === 'light'
+                    ? "from-blue-600 to-purple-600"
+                    : "from-blue-400 to-purple-400"
+                )
             )}>
               Progress Bar Generator
             </h1>
@@ -272,9 +282,9 @@ export default function Home() {
                 ? "bg-white border-2 border-black"
                 : "bg-black border-2 border-white"
               : getThemeClasses({
-                  light: "bg-white/80 backdrop-blur-sm border-0",
-                  dark: "bg-gray-800/80 backdrop-blur-sm border-gray-700"
-                })
+                light: "bg-white/80 backdrop-blur-sm border-0",
+                dark: "bg-gray-800/80 backdrop-blur-sm border-gray-700"
+              })
           )}>
             <div className="flex items-center gap-2">
               <Sliders className={cn(
@@ -400,10 +410,12 @@ export default function Home() {
                   <div className="flex gap-2 mt-1">
                     <div
                       className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
-                      style={{ borderColor: getThemeClasses({
-                        light: "#e2e8f0",
-                        dark: "#4b5563"
-                      }) }}
+                      style={{
+                        borderColor: getThemeClasses({
+                          light: "#e2e8f0",
+                          dark: "#4b5563"
+                        })
+                      }}
                       onClick={() => document.getElementById('colorPicker')?.click()}
                     >
                       <div className="absolute inset-0" style={{ backgroundColor: params.color }}></div>
@@ -461,10 +473,12 @@ export default function Home() {
                   <div className="flex gap-2 mt-1">
                     <div
                       className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
-                      style={{ borderColor: getThemeClasses({
-                        light: "#e2e8f0",
-                        dark: "#4b5563"
-                      }) }}
+                      style={{
+                        borderColor: getThemeClasses({
+                          light: "#e2e8f0",
+                          dark: "#4b5563"
+                        })
+                      }}
                       onClick={() => document.getElementById('backgroundColorPicker')?.click()}
                     >
                       <div className="absolute inset-0" style={{ backgroundColor: params.backgroundColor }}></div>
@@ -719,8 +733,8 @@ export default function Home() {
                           type="checkbox"
                           id="striped"
                           checked={params.striped}
-                          onChange={(e) => setParams({ 
-                            ...params, 
+                          onChange={(e) => setParams({
+                            ...params,
                             striped: e.target.checked,
                             animated: e.target.checked ? params.animated : false // Uncheck animated if striped is unchecked
                           })}
@@ -770,8 +784,8 @@ export default function Home() {
                           checked={params.animated}
                           onChange={(e) => {
                             const isChecked = e.target.checked;
-                            setParams({ 
-                              ...params, 
+                            setParams({
+                              ...params,
                               animated: isChecked,
                               striped: isChecked ? true : params.striped // Force striped to be true when animated is checked
                             });
@@ -873,7 +887,7 @@ export default function Home() {
 
               <div className="md:col-span-7 space-y-6">
                 <div className="w-full">
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-4" aria-label="Progress bar preview section">
                     <Palette className={cn("h-5 w-5", getThemeClasses({
                       light: "text-purple-500",
                       dark: "text-purple-400"
@@ -930,10 +944,8 @@ export default function Home() {
                   )}>
                     <div
                       className="p-4 sm:p-6 md:p-10 overflow-auto"
-                      style={{
-                        overflowX: 'auto',
-                        WebkitOverflowScrolling: 'touch'
-                      }}
+                      role="region"
+                      aria-label="Progress bar preview"
                     >
                       <div style={{
                         width: 'fit-content',
@@ -954,19 +966,25 @@ export default function Home() {
                               dark: '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)'
                             })
                           }}
-                          title="Progress Bar Preview"
+                          title={`Progress Bar Preview - ${params.progress}% complete`}
+                          aria-label={`Progress bar preview showing ${params.progress}% completion`}
+                          role="img"
                           loading="eager"
                         />
                       </div>
                     </div>
                     {params.width > 500 && (
-                      <div className={cn(
-                        "py-2 px-4 text-xs text-center border-t",
-                        getThemeClasses({
-                          light: "text-gray-500 border-gray-100",
-                          dark: "text-gray-400 border-gray-700"
-                        })
-                      )}>
+                      <div 
+                        className={cn(
+                          "py-2 px-4 text-xs text-center border-t",
+                          getThemeClasses({
+                            light: "text-gray-500 border-gray-100",
+                            dark: "text-gray-400 border-gray-700"
+                          })
+                        )}
+                        aria-live="polite"
+                        role="status"
+                      >
                         <span>Scroll horizontally to view the entire progress bar →</span>
                       </div>
                     )}
@@ -1008,6 +1026,7 @@ export default function Home() {
                   <Tabs
                     defaultValue="url"
                     className="w-full"
+                    aria-label="Integration code options"
                   >
                     <TabsList
                       className={cn(
@@ -1079,7 +1098,7 @@ export default function Home() {
                           variant="ghost"
                           className="absolute right-2 top-1/2 -translate-y-1/2"
                           onClick={() => copyToClipboard(generateUrl(), 'url')}
-                          aria-label="copy url"
+                          aria-label={`Copy URL to clipboard${copied === 'url' ? '. Copied!' : ''}`}
                         >
                           {copied === 'url' ? (
                             <Check className="h-4 w-4 text-green-500" data-testid="check-icon" />
@@ -1117,7 +1136,7 @@ export default function Home() {
                           variant="ghost"
                           className="absolute right-2 top-1/2 -translate-y-1/2"
                           onClick={() => copyToClipboard(`![Progress Bar](${generateUrl()})`, 'markdown')}
-                          aria-label="copy markdown"
+                          aria-label={`Copy Markdown to clipboard${copied === 'markdown' ? '. Copied!' : ''}`}
                         >
                           {copied === 'markdown' ? (
                             <Check className="h-4 w-4 text-green-500" data-testid="check-icon" />
@@ -1151,7 +1170,7 @@ export default function Home() {
                           variant="ghost"
                           className="absolute right-2 top-1/2 -translate-y-1/2"
                           onClick={() => copyToClipboard(`<img src="${generateUrl()}" alt="Progress Bar">`, 'html')}
-                          aria-label="copy html"
+                          aria-label={`Copy HTML to clipboard${copied === 'html' ? '. Copied!' : ''}`}
                         >
                           {copied === 'html' ? (
                             <Check className="h-4 w-4 text-green-500" data-testid="check-icon" />
@@ -1178,9 +1197,9 @@ export default function Home() {
               ? "bg-white border-2 border-black"
               : "bg-black border-2 border-white"
             : getThemeClasses({
-                light: "bg-white/80 backdrop-blur-sm border-0",
-                dark: "bg-gray-800/80 backdrop-blur-sm border-gray-700"
-              })
+              light: "bg-white/80 backdrop-blur-sm border-0",
+              dark: "bg-gray-800/80 backdrop-blur-sm border-gray-700"
+            })
         )}>
           <div className="flex items-center gap-2 mb-6">
             <Info className={cn("h-5 w-5", getThemeClasses({

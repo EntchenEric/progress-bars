@@ -228,7 +228,7 @@ export default function Home() {
           </Button>
         </div>
 
-        <div className="text-center space-y-2 sm:space-y-4 py-6 sm:py-10">
+        <div className="text-center space-y-2 sm:space-y-4 py-6 sm:py-10 mb-5">
           <div className="inline-flex items-center gap-2 mb-2 flex-wrap justify-center">
             <Sparkles className={cn(
               "h-5 w-5 sm:h-6 sm:w-6",
@@ -241,7 +241,7 @@ export default function Home() {
                   : "text-blue-400"
             )} />
             <h1 className={cn(
-              "text-3xl sm:text-4xl md:text-5xl font-bold",
+              "text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.3]",
               highContrast
                 ? theme === 'light'
                   ? "text-black"

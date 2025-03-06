@@ -82,7 +82,7 @@ describe('Progress Bar Generator', () => {
             })
 
             const url = screen.getByDisplayValue(/^https:.*/)
-            expect(url.value).toContain('width=3000') // Should be capped at 3000
+            expect(url.value).toContain('width=3000')
         })
 
         it('toggles animation speed slider when animation is enabled', async () => {
@@ -173,7 +173,7 @@ describe('Progress Bar Generator', () => {
             })
 
             const url = screen.getByDisplayValue(/^https:.*/)
-            expect(url.value).toContain('color=%232563eb') // Should keep the default color
+            expect(url.value).toContain('color=%232563eb')
         })
     })
 })

@@ -6,8 +6,8 @@ export async function GET(request: NextRequest) {
   const color = searchParams.get('color') || '#2563eb';
   const backgroundColor = searchParams.get('backgroundColor') || '#f3f4f6';
   const progress = parseIntSafe(searchParams.get('progress'), 0);
-  const height = Math.min(500, Math.max(50, parseIntSafe(searchParams.get('height'), 50)));
-  const width = Math.min(3000, Math.max(200, parseIntSafe(searchParams.get('width'), 200)));
+  const height = Math.min(500, Math.max(5, parseIntSafe(searchParams.get('height'), 5)));
+  const width = Math.min(3000, Math.max(10, parseIntSafe(searchParams.get('width'), 10)));
   const borderRadius = Math.min(1000, Math.max(0, parseIntSafe(searchParams.get('borderRadius'), 0)));
   const striped = searchParams.get('striped') === 'true';
   const animated = searchParams.get('animated') === 'true';

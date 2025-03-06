@@ -87,8 +87,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
 
-    expect(content).toContain('width="200"');
-    expect(content).toContain('height="50"');
+    expect(content).toContain('width="10"');
+    expect(content).toContain('height="5"');
   });
 
   it('clamps progress value between 0 and 100', async () => {
@@ -169,8 +169,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
 
-    expect(content).toContain('width="200"');
-    expect(content).toContain('height="50"');
+    expect(content).toContain('width="10"');
+    expect(content).toContain('height="5"');
     expect(content).toContain('stop-color:#2563eb');
   });
 
@@ -228,7 +228,7 @@ describe('GET /bar', () => {
   it('generates proper gradient with color adjustment', async () => {
     const { GET } = require('../../app/bar/route');
     const req = createMockRequest({
-      color: '#808080' // Medium gray
+      color: '#808080'
     });
     const res = await GET(req);
     const content = await res.text();
@@ -285,8 +285,8 @@ describe('GET /bar', () => {
     
     expect(content).toContain('stop-color:#2563eb');
     expect(content).toContain('fill="#f3f4f6"');
-    expect(content).toMatch(/width="200"/);
-    expect(content).toMatch(/height="50"/);
+    expect(content).toMatch(/width="10"/);
+    expect(content).toMatch(/height="5"/);
   });
 
   it('enforces minimum size constraints', async () => {
@@ -298,8 +298,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
     
-    expect(content).toMatch(/width="200"/);
-    expect(content).toMatch(/height="50"/);
+    expect(content).toMatch(/width="10"/);
+    expect(content).toMatch(/height="5"/);
 
     expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
   });
@@ -312,8 +312,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
     
-    expect(content).toMatch(/width="200"/);
-    expect(content).toMatch(/height="50"/);
+    expect(content).toMatch(/width="10"/);
+    expect(content).toMatch(/height="5"/);
 
     expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
   });

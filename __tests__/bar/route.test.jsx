@@ -87,8 +87,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
 
-    expect(content).toContain('width="200"');
-    expect(content).toContain('height="50"');
+    expect(content).toContain('width="10"');
+    expect(content).toContain('height="5"');
   });
 
   it('clamps progress value between 0 and 100', async () => {
@@ -169,8 +169,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
 
-    expect(content).toContain('width="200"');
-    expect(content).toContain('height="50"');
+    expect(content).toContain('width="10"');
+    expect(content).toContain('height="5"');
     expect(content).toContain('stop-color:#2563eb');
   });
 
@@ -228,7 +228,7 @@ describe('GET /bar', () => {
   it('generates proper gradient with color adjustment', async () => {
     const { GET } = require('../../app/bar/route');
     const req = createMockRequest({
-      color: '#808080' // Medium gray
+      color: '#808080'
     });
     const res = await GET(req);
     const content = await res.text();
@@ -285,8 +285,8 @@ describe('GET /bar', () => {
     
     expect(content).toContain('stop-color:#2563eb');
     expect(content).toContain('fill="#f3f4f6"');
-    expect(content).toMatch(/width="200"/);
-    expect(content).toMatch(/height="50"/);
+    expect(content).toMatch(/width="10"/);
+    expect(content).toMatch(/height="5"/);
   });
 
   it('enforces minimum size constraints', async () => {
@@ -298,8 +298,8 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
     
-    expect(content).toMatch(/width="200"/);
-    expect(content).toMatch(/height="50"/);
+    expect(content).toMatch(/width="10"/);
+    expect(content).toMatch(/height="5"/);
 
     expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
   });
@@ -312,9 +312,43 @@ describe('GET /bar', () => {
     const res = await GET(req);
     const content = await res.text();
     
-    expect(content).toMatch(/width="200"/);
-    expect(content).toMatch(/height="50"/);
+    expect(content).toMatch(/width="10"/);
+    expect(content).toMatch(/height="5"/);
 
     expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
+  });
+
+  it('calculates initial animation duration correctly', async () => {
+    const { GET } = require('../../app/bar/route');
+    
+    // Test with default speed (1)
+    const reqDefault = createMockRequest({
+      progress: '50'
+    });
+    const resDefault = await GET(reqDefault);
+    const contentDefault = await resDefault.text();
+    // Match the animation duration with some flexibility for decimal places
+    expect(contentDefault).toMatch(/initial-fill 0\.5\ds/);
+    expect(contentDefault).toContain('class="initial-animation"');
+
+    // Test with custom speed (2)
+    const reqFaster = createMockRequest({
+      progress: '75',
+      initialAnimationSpeed: '2'
+    });
+    const resFaster = await GET(reqFaster);
+    const contentFaster = await resFaster.text();
+    // Match the animation duration with some flexibility for decimal places
+    expect(contentFaster).toMatch(/initial-fill 0\.3\ds/);
+    expect(contentFaster).toContain('class="initial-animation"');
+
+    // Test with no animation (speed 0)
+    const reqNoAnim = createMockRequest({
+      progress: '100',
+      initialAnimationSpeed: '0'
+    });
+    const resNoAnim = await GET(reqNoAnim);
+    const contentNoAnim = await resNoAnim.text();
+    expect(contentNoAnim).not.toContain('class="initial-animation"');
   });
 });

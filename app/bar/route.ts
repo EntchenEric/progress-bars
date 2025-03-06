@@ -4,10 +4,11 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
   const color = searchParams.get('color') || '#2563eb';
+  const colorGradient = searchParams.get('colorGradient');
   const backgroundColor = searchParams.get('backgroundColor') || '#f3f4f6';
   const progress = parseIntSafe(searchParams.get('progress'), 0);
-  const height = Math.min(500, Math.max(50, parseIntSafe(searchParams.get('height'), 50)));
-  const width = Math.min(3000, Math.max(200, parseIntSafe(searchParams.get('width'), 200)));
+  const height = Math.min(500, Math.max(5, parseIntSafe(searchParams.get('height'), 5)));
+  const width = Math.min(3000, Math.max(10, parseIntSafe(searchParams.get('width'), 10)));
   const borderRadius = Math.min(1000, Math.max(0, parseIntSafe(searchParams.get('borderRadius'), 0)));
   const striped = searchParams.get('striped') === 'true';
   const animated = searchParams.get('animated') === 'true';
@@ -20,13 +21,38 @@ export async function GET(request: NextRequest) {
   const animationDurationString = animationDuration.toFixed(2);
   
   const stripeSize = Math.max(10, Math.min(40, 20 * safeAnimationSpeed));
+
+  const initialAnimationSpeed = parseFloatSafe(searchParams.get('initialAnimationSpeed'), 1);
+  const shouldAnimate = initialAnimationSpeed > 0;
+  const initialAnimationDuration = (clampedProgress / 100) * (1 / initialAnimationSpeed);
   
-  const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <defs>
+  // Helper function to create gradient definition
+  const createGradientDef = () => {
+    if (colorGradient) {
+      // Extract colors and positions from gradient string
+      const matches = colorGradient.match(/(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|rgba?\([^)]+\))/g) || [];
+      if (matches.length >= 2) {
+        return `
+          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            ${matches.map((color, index) => 
+              `<stop offset="${(index * 100) / (matches.length - 1)}%" style="stop-color:${color}; stop-opacity:1" />`
+            ).join('\n')}
+          </linearGradient>
+        `;
+      }
+    }
+    // Fallback to default gradient using single color
+    return `
       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" style="stop-color:${color}; stop-opacity:1" />
         <stop offset="100%" style="stop-color:${adjustColor(color, 15)}; stop-opacity:1" />
       </linearGradient>
+    `;
+  };
+
+  const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      ${createGradientDef()}
       
       ${striped ? `
       <pattern id="stripePattern" patternUnits="userSpaceOnUse" width="${stripeSize}" height="${stripeSize}" patternTransform="rotate(45 0 0)">
@@ -68,6 +94,7 @@ export async function GET(request: NextRequest) {
         height="${height}"
         fill="url(#progressGradient)"
         ${animated && !striped ? 'class="pulse-animated"' : ''}
+        ${shouldAnimate ? 'class="initial-animation"' : ''}
       />
       
       ${striped ? `
@@ -76,6 +103,7 @@ export async function GET(request: NextRequest) {
         width="${progressWidth}"
         height="${height}"
         fill="url(#stripePattern)"
+        ${shouldAnimate ? 'class="initial-animation"' : ''}
       />
       ` : ''}
     </g>
@@ -97,6 +125,15 @@ export async function GET(request: NextRequest) {
       @keyframes progress-stripes {
         from { background-position: ${50 * safeAnimationSpeed}px 0; }
         to { background-position: 0 0; }
+      }
+      
+      @keyframes initial-fill {
+        from { width: 0; }
+        to { width: ${progressWidth}px; }
+      }
+      
+      .initial-animation {
+        animation: initial-fill ${initialAnimationDuration.toFixed(2)}s ease-out forwards;
       }
       
       .progress-animated {

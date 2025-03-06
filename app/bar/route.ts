@@ -20,6 +20,10 @@ export async function GET(request: NextRequest) {
   const animationDurationString = animationDuration.toFixed(2);
   
   const stripeSize = Math.max(10, Math.min(40, 20 * safeAnimationSpeed));
+
+  const initialAnimationSpeed = parseFloatSafe(searchParams.get('initialAnimationSpeed'), 1);
+  const shouldAnimate = initialAnimationSpeed > 0;
+  const initialAnimationDuration = (clampedProgress / 100) * (1 / initialAnimationSpeed);
   
   const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
@@ -68,6 +72,7 @@ export async function GET(request: NextRequest) {
         height="${height}"
         fill="url(#progressGradient)"
         ${animated && !striped ? 'class="pulse-animated"' : ''}
+        ${shouldAnimate ? 'class="initial-animation"' : ''}
       />
       
       ${striped ? `
@@ -76,6 +81,7 @@ export async function GET(request: NextRequest) {
         width="${progressWidth}"
         height="${height}"
         fill="url(#stripePattern)"
+        ${shouldAnimate ? 'class="initial-animation"' : ''}
       />
       ` : ''}
     </g>
@@ -97,6 +103,15 @@ export async function GET(request: NextRequest) {
       @keyframes progress-stripes {
         from { background-position: ${50 * safeAnimationSpeed}px 0; }
         to { background-position: 0 0; }
+      }
+      
+      @keyframes initial-fill {
+        from { width: 0; }
+        to { width: ${progressWidth}px; }
+      }
+      
+      .initial-animation {
+        animation: initial-fill ${initialAnimationDuration.toFixed(2)}s ease-out forwards;
       }
       
       .progress-animated {

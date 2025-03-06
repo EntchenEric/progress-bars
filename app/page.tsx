@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Copy, Check, Sun, Moon, Sparkles, Palette, Sliders, Code, Info } from 'lucide-react'
+import { Copy, Check, Sun, Moon, Sparkles, Palette, Sliders, Code, Info, RotateCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Slider } from '@/components/ui/slider'
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function Home() {
   const [params, setParams] = useState({
@@ -21,11 +22,13 @@ export default function Home() {
     striped: false,
     animated: false,
     animationSpeed: 1,
+    initialAnimationSpeed: 1,
   })
 
   const [copied, setCopied] = useState<string | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [showConfetti, setShowConfetti] = useState(false)
+  const [iframeKey, setIframeKey] = useState(0)
 
   useEffect(() => {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -52,7 +55,8 @@ export default function Home() {
       borderRadius: Math.min(1000, Math.max(0, isNaN(params.borderRadius) ? 0 : params.borderRadius)),
       striped: Boolean(params.striped),
       animated: Boolean(params.animated),
-      animationSpeed: isNaN(params.animationSpeed) ? 0 : Math.max(0, params.animationSpeed)
+      animationSpeed: isNaN(params.animationSpeed) ? 0 : Math.max(0, params.animationSpeed),
+      initialAnimationSpeed: isNaN(params.initialAnimationSpeed) ? 0 : Math.max(0, params.initialAnimationSpeed)
     };
 
     const baseUrl = 'https://progress-bars-eight.vercel.app/bar'
@@ -66,6 +70,7 @@ export default function Home() {
       striped: safeValues.striped.toString(),
       animated: safeValues.animated.toString(),
       animationSpeed: safeValues.animationSpeed.toString(),
+      initialAnimationSpeed: safeValues.initialAnimationSpeed.toString()
     })
     return `${baseUrl}?${queryParams.toString()}`
   }
@@ -199,7 +204,7 @@ export default function Home() {
                   </div>
 
                   <Slider
-                    id="progress"
+                    id="progress-slider"
                     min={0}
                     max={100}
                     step={1}
@@ -352,7 +357,6 @@ export default function Home() {
                         const value = e.target.value === '' ? '' : parseInt(e.target.value);
                         let finalValue = value === '' ? 0 : isNaN(value as number) ? 0 : value as number;
 
-                        // Apply max constraint
                         finalValue = Math.min(500, finalValue);
 
                         setParams({
@@ -448,6 +452,66 @@ export default function Home() {
                       placeholder="0"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1.5">
+                      <Label
+                        htmlFor="initialAnimationSpeed"
+                        className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                      >
+                        Initial Animation Speed
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className={cn(
+                              "h-4 w-4 p-0 hover:bg-transparent",
+                              theme === 'light' ? "text-gray-400 hover:text-gray-600" : "text-gray-500 hover:text-gray-400"
+                            )}
+                          >
+                            <Info className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          className={cn(
+                            "text-sm p-3 w-64",
+                            theme === 'light'
+                              ? "bg-white text-gray-700"
+                              : "bg-gray-800 text-gray-200 border-gray-700"
+                          )}
+                        >
+                          When set to 0, the progress bar will appear instantly without any initial animation. Higher values will make the progress bar animate from 0% to the target progress value. more = faster
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <span className={cn(
+                      "text-sm font-medium px-2 py-1 rounded-md",
+                      theme === 'light'
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-blue-900/30 text-blue-300"
+                    )} aria-label="initialAnimationSpeed-value">
+                      {params.initialAnimationSpeed.toFixed(1)}x
+                    </span>
+                  </div>
+
+                  <Slider
+                    id="initialAnimationSpeed"
+                    min={0}
+                    max={5}
+                    step={0.1}
+                    value={[params.initialAnimationSpeed]}
+                    onValueChange={(value: number[]) => setParams({ ...params, initialAnimationSpeed: value[0] })}
+                    className={cn(
+                      "mt-2",
+                      theme === 'light'
+                        ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md"
+                        : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                    )}
+                    aria-label="initial animation speed"
+                  />
                 </div>
 
                 <div className="space-y-3 mt-4">
@@ -584,6 +648,32 @@ export default function Home() {
                     )}>
                       Preview
                     </h2>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn(
+                            "ml-2 transition-all hover:scale-110",
+                            theme === 'light' ? "text-gray-500 hover:text-gray-700" : "text-gray-400 hover:text-gray-200"
+                          )}
+                          onClick={() => setIframeKey(prev => prev + 1)}
+                          aria-label="reload preview"
+                        >
+                          <RotateCw className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        className={cn(
+                          "text-sm p-2",
+                          theme === 'light'
+                            ? "bg-white text-gray-700"
+                            : "bg-gray-800 text-gray-200 border-gray-700"
+                        )}
+                      >
+                        Reload preview to play initial animation again
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
 
                   <div className={cn(
@@ -606,6 +696,7 @@ export default function Home() {
                         justifyContent: 'center'
                       }}>
                         <iframe
+                          key={iframeKey}
                           src={generateUrl()}
                           width={params.width}
                           height={params.height}

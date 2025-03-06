@@ -30,7 +30,9 @@ const Slider = React.forwardRef<
       step={step}
       value={value?.[0]}
       onChange={(e) => onValueChange?.([Number(e.target.value)])}
-      data-testid="slider-input"
+      data-testid={`${props['aria-label']?.replace(/\s+/g, '-')}-slider-input`}
+      aria-label={props['aria-label']}
+      id={props.id}
     />
     <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
       <SliderPrimitive.Range className="absolute h-full bg-gradient-to-r from-blue-500 to-purple-500" />

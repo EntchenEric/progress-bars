@@ -317,4 +317,38 @@ describe('GET /bar', () => {
 
     expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
   });
+
+  it('calculates initial animation duration correctly', async () => {
+    const { GET } = require('../../app/bar/route');
+    
+    // Test with default speed (1)
+    const reqDefault = createMockRequest({
+      progress: '50'
+    });
+    const resDefault = await GET(reqDefault);
+    const contentDefault = await resDefault.text();
+    // Match the animation duration with some flexibility for decimal places
+    expect(contentDefault).toMatch(/initial-fill 0\.5\ds/);
+    expect(contentDefault).toContain('class="initial-animation"');
+
+    // Test with custom speed (2)
+    const reqFaster = createMockRequest({
+      progress: '75',
+      initialAnimationSpeed: '2'
+    });
+    const resFaster = await GET(reqFaster);
+    const contentFaster = await resFaster.text();
+    // Match the animation duration with some flexibility for decimal places
+    expect(contentFaster).toMatch(/initial-fill 0\.3\ds/);
+    expect(contentFaster).toContain('class="initial-animation"');
+
+    // Test with no animation (speed 0)
+    const reqNoAnim = createMockRequest({
+      progress: '100',
+      initialAnimationSpeed: '0'
+    });
+    const resNoAnim = await GET(reqNoAnim);
+    const contentNoAnim = await resNoAnim.text();
+    expect(contentNoAnim).not.toContain('class="initial-animation"');
+  });
 });

@@ -15,6 +15,7 @@ export default function Home() {
   const [params, setParams] = useState({
     progress: 75,
     color: '#2563eb',
+    colorGradient: '',
     backgroundColor: '#f3f4f6',
     height: 20,
     width: 200,
@@ -58,7 +59,8 @@ export default function Home() {
       striped: Boolean(params.striped),
       animated: Boolean(params.animated),
       animationSpeed: isNaN(params.animationSpeed) ? 0 : Math.max(0, params.animationSpeed),
-      initialAnimationSpeed: isNaN(params.initialAnimationSpeed) ? 0 : Math.max(0, params.initialAnimationSpeed)
+      initialAnimationSpeed: isNaN(params.initialAnimationSpeed) ? 0 : Math.max(0, params.initialAnimationSpeed),
+      colorGradient: params.colorGradient || undefined,
     };
 
     const baseUrl = 'https://progress-bars-eight.vercel.app/bar'
@@ -72,7 +74,8 @@ export default function Home() {
       striped: safeValues.striped.toString(),
       animated: safeValues.animated.toString(),
       animationSpeed: safeValues.animationSpeed.toString(),
-      initialAnimationSpeed: safeValues.initialAnimationSpeed.toString()
+      initialAnimationSpeed: safeValues.initialAnimationSpeed.toString(),
+      ...(safeValues.colorGradient && { colorGradient: safeValues.colorGradient }),
     })
     return `${baseUrl}?${queryParams.toString()}`
   }
@@ -129,6 +132,33 @@ export default function Home() {
     { name: 'Red', color: '#dc2626' },
     { name: 'Orange', color: '#ea580c' },
     { name: 'Pink', color: '#db2777' },
+  ]
+
+  const presetGradients = [
+    { 
+      name: 'Ocean Breeze', 
+      gradient: 'linear-gradient(90deg, #0ea5e9, #2563eb, #4f46e5)'
+    },
+    { 
+      name: 'Sunset Vibes', 
+      gradient: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)'
+    },
+    { 
+      name: 'Forest Magic', 
+      gradient: 'linear-gradient(90deg, #059669, #16a34a, #65a30d)'
+    },
+    { 
+      name: 'Cherry Blossom', 
+      gradient: 'linear-gradient(90deg, #ec4899, #d946ef, #a855f7)'
+    },
+    { 
+      name: 'Golden Hour', 
+      gradient: 'linear-gradient(90deg, #f59e0b, #ea580c, #dc2626)'
+    },
+    { 
+      name: 'Northern Lights', 
+      gradient: 'linear-gradient(90deg, #06b6d4, #6366f1, #a855f7)'
+    }
   ]
 
   return (
@@ -506,6 +536,88 @@ export default function Home() {
                       )}
                     />
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label
+                    className={getThemeClasses({
+                      light: "text-gray-700",
+                      dark: "text-gray-200"
+                    })}
+                  >
+                    Gradient Presets
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {presetGradients.map((preset) => (
+                      <Button
+                        key={preset.name}
+                        variant="ghost"
+                        className={cn(
+                          "h-auto py-2 px-3 flex flex-col items-center gap-1 transition-all hover:scale-105",
+                          getThemeClasses({
+                            light: "hover:bg-gray-50",
+                            dark: "hover:bg-gray-700"
+                          })
+                        )}
+                        onClick={() => setParams({
+                          ...params,
+                          colorGradient: preset.gradient,
+                          color: ''
+                        })}
+                      >
+                        <div 
+                          className="w-full h-3 rounded-full" 
+                          style={{ 
+                            background: preset.gradient,
+                            border: getThemeClasses({
+                              light: "1px solid rgba(0,0,0,0.1)",
+                              dark: "1px solid rgba(255,255,255,0.1)"
+                            })
+                          }}
+                        ></div>
+                        <span className={cn(
+                          "text-xs font-medium",
+                          getThemeClasses({
+                            light: "text-gray-700",
+                            dark: "text-gray-300"
+                          })
+                        )}>
+                          {preset.name}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="gradient"
+                    className={getThemeClasses({
+                      light: "text-gray-700",
+                      dark: "text-gray-200"
+                    })}
+                  >
+                    Custom Gradient
+                  </Label>
+                  <Input
+                    id="gradient"
+                    type="text"
+                    value={params.colorGradient}
+                    onChange={(e) => setParams({ 
+                      ...params, 
+                      colorGradient: e.target.value,
+                      color: e.target.value ? '' : params.color
+                    })}
+                    placeholder="linear-gradient(90deg, #color1, #color2)"
+                    className={cn(
+                      getThemeClasses({
+                        light: "bg-white",
+                        dark: "bg-gray-800 border-gray-700 text-gray-200",
+                        lightHighContrast: "bg-white border-2 border-black text-black",
+                        darkHighContrast: "bg-black border-2 border-white text-white"
+                      })
+                    )}
+                  />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">

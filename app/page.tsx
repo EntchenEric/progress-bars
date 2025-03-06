@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Copy, Check, Sun, Moon, Sparkles, Palette, Sliders, Code, Info, RotateCw } from 'lucide-react'
+import { Copy, Check, Sun, Moon, Sparkles, Palette, Sliders, Code, Info, RotateCw, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -27,6 +27,7 @@ export default function Home() {
 
   const [copied, setCopied] = useState<string | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [highContrast, setHighContrast] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
 
@@ -86,6 +87,36 @@ export default function Home() {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }
 
+  const toggleHighContrast = () => {
+    setHighContrast(!highContrast)
+  }
+
+  // High contrast color overrides
+  const getHighContrastColors = (isLight: boolean) => {
+    return {
+      text: isLight ? 'text-black' : 'text-white',
+      bg: isLight ? 'bg-white' : 'bg-black',
+      border: isLight ? 'border-black' : 'border-white',
+      hover: isLight ? 'hover:bg-gray-100' : 'hover:bg-gray-900',
+      accent: isLight ? 'bg-black text-white' : 'bg-white text-black',
+    }
+  }
+
+  // Helper function to get theme-based classes
+  const getThemeClasses = (options: {
+    light: string,
+    dark: string,
+    lightHighContrast?: string,
+    darkHighContrast?: string
+  }) => {
+    if (highContrast) {
+      return theme === 'light' 
+        ? options.lightHighContrast || getHighContrastColors(true)[options.light.split('-')[1] as keyof ReturnType<typeof getHighContrastColors>] || options.light
+        : options.darkHighContrast || getHighContrastColors(false)[options.dark.split('-')[1] as keyof ReturnType<typeof getHighContrastColors>] || options.dark
+    }
+    return theme === 'light' ? options.light : options.dark
+  }
+
   const presetColors = [
     { name: 'Blue', color: '#2563eb' },
     { name: 'Green', color: '#16a34a' },
@@ -100,12 +131,21 @@ export default function Home() {
       role="main"
       className={cn(
         "min-h-screen transition-colors duration-300 overflow-x-hidden",
-        theme === 'light'
-          ? "bg-gradient-to-br from-blue-50 via-white to-purple-50"
-          : "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+        highContrast
+          ? getThemeClasses({
+              light: "bg-white",
+              dark: "bg-black"
+            })
+          : getThemeClasses({
+              light: "bg-gradient-to-br from-blue-50 via-white to-purple-50",
+              dark: "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+            })
       )}
     >
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      <div className={cn(
+        "fixed inset-0 overflow-hidden pointer-events-none",
+        highContrast ? "hidden" : ""
+      )}>
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 dark:bg-purple-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-200 dark:bg-blue-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
         <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-pink-200 dark:bg-pink-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
@@ -130,7 +170,38 @@ export default function Home() {
       )}
 
       <div className="relative max-w-6xl mx-auto px-4 py-4 sm:px-6 md:px-8">
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-4 right-4 z-10 flex gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleHighContrast}
+                aria-label="toggle high contrast"
+                className={cn(
+                  "rounded-full transition-all hover:scale-110",
+                  highContrast
+                    ? getThemeClasses({ light: 'bg-black text-white', dark: 'bg-white text-black' })
+                    : getThemeClasses({ light: 'text-gray-700 hover:text-gray-900', dark: 'text-yellow-300 hover:text-yellow-200' })
+                )}
+              >
+                <Eye className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              className={cn(
+                "text-sm p-2",
+                getThemeClasses({
+                  light: "bg-white text-gray-700",
+                  dark: "bg-gray-800 text-gray-200 border-gray-700",
+                  lightHighContrast: "bg-white text-black border-black",
+                  darkHighContrast: "bg-black text-white border-white"
+                })
+              )}
+            >
+              Toggle high contrast mode
+            </TooltipContent>
+          </Tooltip>
           <Button
             variant="ghost"
             size="icon"
@@ -138,7 +209,9 @@ export default function Home() {
             aria-label="toggle theme"
             className={cn(
               "rounded-full transition-all hover:scale-110",
-              theme === 'dark' ? "text-yellow-300 hover:text-yellow-200" : "text-gray-700 hover:text-gray-900"
+              highContrast
+                ? getThemeClasses({ light: 'bg-black text-white', dark: 'bg-white text-black' })
+                : getThemeClasses({ light: 'text-gray-700 hover:text-gray-900', dark: 'text-yellow-300 hover:text-yellow-200' })
             )}
           >
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
@@ -147,16 +220,41 @@ export default function Home() {
 
         <div className="text-center space-y-2 sm:space-y-4 py-6 sm:py-10">
           <div className="inline-flex items-center gap-2 mb-2 flex-wrap justify-center">
-            <Sparkles className={cn("h-5 w-5 sm:h-6 sm:w-6", theme === 'light' ? "text-blue-500" : "text-blue-400")} />
+            <Sparkles className={cn(
+              "h-5 w-5 sm:h-6 sm:w-6",
+              highContrast
+                ? theme === 'light'
+                  ? "text-black"
+                  : "text-white"
+                : theme === 'light'
+                  ? "text-blue-500"
+                  : "text-blue-400"
+            )} />
             <h1 className={cn(
-              "text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r pb-2",
-              theme === 'light'
-                ? "from-blue-600 to-purple-600"
-                : "from-blue-400 to-purple-400"
+              "text-3xl sm:text-4xl md:text-5xl font-bold",
+              highContrast
+                ? theme === 'light'
+                  ? "text-black"
+                  : "text-white"
+                : cn(
+                    "bg-clip-text text-transparent bg-gradient-to-r",
+                    theme === 'light'
+                      ? "from-blue-600 to-purple-600"
+                      : "from-blue-400 to-purple-400"
+                  )
             )}>
               Progress Bar Generator
             </h1>
-            <Sparkles className={cn("h-5 w-5 sm:h-6 sm:w-6", theme === 'light' ? "text-purple-500" : "text-purple-400")} />
+            <Sparkles className={cn(
+              "h-5 w-5 sm:h-6 sm:w-6",
+              highContrast
+                ? theme === 'light'
+                  ? "text-black"
+                  : "text-white"
+                : theme === 'light'
+                  ? "text-purple-500"
+                  : "text-purple-400"
+            )} />
           </div>
           <p className={cn(
             "text-lg sm:text-xl max-w-2xl mx-auto px-2",
@@ -168,16 +266,35 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6 md:gap-8 mt-4 sm:mt-8">
           <Card className={cn(
-            "p-4 sm:p-6 space-y-4 sm:space-y-6 border-0 shadow-xl",
-            theme === 'light'
-              ? "bg-white/80 backdrop-blur-sm"
-              : "bg-gray-800/80 backdrop-blur-sm border-gray-700"
+            "p-4 sm:p-6 space-y-4 sm:space-y-6",
+            highContrast
+              ? theme === 'light'
+                ? "bg-white border-2 border-black"
+                : "bg-black border-2 border-white"
+              : getThemeClasses({
+                  light: "bg-white/80 backdrop-blur-sm border-0",
+                  dark: "bg-gray-800/80 backdrop-blur-sm border-gray-700"
+                })
           )}>
             <div className="flex items-center gap-2">
-              <Sliders className={cn("h-5 w-5", theme === 'light' ? "text-blue-500" : "text-blue-400")} />
+              <Sliders className={cn(
+                "h-5 w-5",
+                highContrast
+                  ? theme === 'light'
+                    ? "text-black"
+                    : "text-white"
+                  : theme === 'light'
+                    ? "text-blue-500"
+                    : "text-blue-400"
+              )} />
               <h2 className={cn(
                 "text-xl sm:text-2xl font-semibold",
-                theme === 'light' ? "text-gray-800" : "text-gray-100"
+                getThemeClasses({
+                  light: "text-gray-800",
+                  dark: "text-gray-100",
+                  lightHighContrast: "text-black",
+                  darkHighContrast: "text-white"
+                })
               )}>
                 Customize
               </h2>
@@ -189,15 +306,21 @@ export default function Home() {
                   <div className="flex justify-between items-center">
                     <Label
                       htmlFor="progress"
-                      className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                      className={getThemeClasses({
+                        light: "text-gray-700",
+                        dark: "text-gray-200"
+                      })}
                     >
                       Progress
                     </Label>
                     <span className={cn(
                       "text-sm font-medium px-2 py-1 rounded-md",
-                      theme === 'light'
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-blue-900/30 text-blue-300"
+                      getThemeClasses({
+                        light: "bg-blue-100 text-blue-700",
+                        dark: "bg-blue-900/30 text-blue-300",
+                        lightHighContrast: "text-black",
+                        darkHighContrast: "text-white"
+                      })
                     )} aria-label="progress-value">
                       {params.progress}%
                     </span>
@@ -212,9 +335,10 @@ export default function Home() {
                     onValueChange={(value: number[]) => setParams({ ...params, progress: value[0] })}
                     className={cn(
                       "mt-2",
-                      theme === 'light'
-                        ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md"
-                        : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                      getThemeClasses({
+                        light: "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md",
+                        dark: "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                      })
                     )}
                     aria-label="progress"
                   />
@@ -222,7 +346,10 @@ export default function Home() {
 
                 <div className="space-y-3">
                   <Label
-                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                    className={getThemeClasses({
+                      light: "text-gray-700",
+                      dark: "text-gray-200"
+                    })}
                   >
                     Preset Colors
                   </Label>
@@ -233,7 +360,10 @@ export default function Home() {
                         variant="ghost"
                         className={cn(
                           "h-auto py-2 px-3 flex flex-col items-center gap-1 transition-all hover:scale-105",
-                          theme === 'light' ? "hover:bg-gray-50" : "hover:bg-gray-700"
+                          getThemeClasses({
+                            light: "hover:bg-gray-50",
+                            dark: "hover:bg-gray-700"
+                          })
                         )}
                         onClick={() => setParams({
                           ...params,
@@ -245,7 +375,10 @@ export default function Home() {
                         </div>
                         <span className={cn(
                           "text-xs font-medium",
-                          theme === 'light' ? "text-gray-700" : "text-gray-300"
+                          getThemeClasses({
+                            light: "text-gray-700",
+                            dark: "text-gray-300"
+                          })
                         )}>
                           {preset.name}
                         </span>
@@ -257,14 +390,20 @@ export default function Home() {
                 <div>
                   <Label
                     htmlFor="color"
-                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                    className={getThemeClasses({
+                      light: "text-gray-700",
+                      dark: "text-gray-200"
+                    })}
                   >
                     Bar Color
                   </Label>
                   <div className="flex gap-2 mt-1">
                     <div
                       className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
-                      style={{ borderColor: theme === 'light' ? '#e2e8f0' : '#4b5563' }}
+                      style={{ borderColor: getThemeClasses({
+                        light: "#e2e8f0",
+                        dark: "#4b5563"
+                      }) }}
                       onClick={() => document.getElementById('colorPicker')?.click()}
                     >
                       <div className="absolute inset-0" style={{ backgroundColor: params.color }}></div>
@@ -274,11 +413,10 @@ export default function Home() {
                         value={params.color}
                         onChange={(e) => {
                           const newColor = e.target.value;
-                          // Validate if it's a valid hex color
                           const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
                           setParams({
                             ...params,
-                            color: isValidHex ? newColor : '#2563eb' // Use default color if invalid
+                            color: isValidHex ? newColor : '#2563eb'
                           });
                         }}
                         className="absolute opacity-0 cursor-pointer w-full h-full"
@@ -290,16 +428,20 @@ export default function Home() {
                       value={params.color}
                       onChange={(e) => {
                         const newColor = e.target.value;
-                        // Validate if it's a valid hex color
                         const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
                         setParams({
                           ...params,
-                          color: isValidHex ? newColor : '#2563eb' // Use default color if invalid
+                          color: isValidHex ? newColor : '#2563eb'
                         });
                       }}
                       className={cn(
                         "flex-1",
-                        theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                        getThemeClasses({
+                          light: "bg-white",
+                          dark: "bg-gray-800 border-gray-700 text-gray-200",
+                          lightHighContrast: "bg-white border-2 border-black text-black",
+                          darkHighContrast: "bg-black border-2 border-white text-white"
+                        })
                       )}
                       aria-label="Bar color"
                     />
@@ -309,14 +451,20 @@ export default function Home() {
                 <div>
                   <Label
                     htmlFor="backgroundColor"
-                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                    className={getThemeClasses({
+                      light: "text-gray-700",
+                      dark: "text-gray-200"
+                    })}
                   >
                     Background Color
                   </Label>
                   <div className="flex gap-2 mt-1">
                     <div
                       className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
-                      style={{ borderColor: theme === 'light' ? '#e2e8f0' : '#4b5563' }}
+                      style={{ borderColor: getThemeClasses({
+                        light: "#e2e8f0",
+                        dark: "#4b5563"
+                      }) }}
                       onClick={() => document.getElementById('backgroundColorPicker')?.click()}
                     >
                       <div className="absolute inset-0" style={{ backgroundColor: params.backgroundColor }}></div>
@@ -335,7 +483,12 @@ export default function Home() {
                       onChange={(e) => setParams({ ...params, backgroundColor: e.target.value })}
                       className={cn(
                         "flex-1",
-                        theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                        getThemeClasses({
+                          light: "bg-white",
+                          dark: "bg-gray-800 border-gray-700 text-gray-200",
+                          lightHighContrast: "bg-white border-2 border-black text-black",
+                          darkHighContrast: "bg-black border-2 border-white text-white"
+                        })
                       )}
                     />
                   </div>
@@ -345,7 +498,10 @@ export default function Home() {
                   <div>
                     <Label
                       htmlFor="height"
-                      className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                      className={getThemeClasses({
+                        light: "text-gray-700",
+                        dark: "text-gray-200"
+                      })}
                     >
                       Height (px)
                     </Label>
@@ -366,7 +522,12 @@ export default function Home() {
                       }}
                       className={cn(
                         "mt-1",
-                        theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                        getThemeClasses({
+                          light: "bg-white",
+                          dark: "bg-gray-800 border-gray-700 text-gray-200",
+                          lightHighContrast: "bg-white border-2 border-black text-black",
+                          darkHighContrast: "bg-black border-2 border-white text-white"
+                        })
                       )}
                       min={0}
                       max={500}
@@ -377,7 +538,10 @@ export default function Home() {
                   <div>
                     <Label
                       htmlFor="width"
-                      className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                      className={getThemeClasses({
+                        light: "text-gray-700",
+                        dark: "text-gray-200"
+                      })}
                     >
                       Width (px)
                     </Label>
@@ -390,11 +554,9 @@ export default function Home() {
                         value={params.width}
                         onChange={(e) => {
                           const value = e.target.value === '' ? '' : parseInt(e.target.value);
-                          // Handle empty value or invalid entry
                           if (value === '' || isNaN(value as number)) {
                             setParams({ ...params, width: 0 });
                           }
-                          // Enforce min/max constraints
                           else if (value < 0) {
                             setParams({ ...params, width: 0 });
                           } else if (value > 3000) {
@@ -405,14 +567,22 @@ export default function Home() {
                         }}
                         className={cn(
                           "mt-1",
-                          theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                          getThemeClasses({
+                            light: "bg-white",
+                            dark: "bg-gray-800 border-gray-700 text-gray-200",
+                            lightHighContrast: "bg-white border-2 border-black text-black",
+                            darkHighContrast: "bg-black border-2 border-white text-white"
+                          })
                         )}
                         placeholder="0"
                       />
                       {params.width > 1000 && (
                         <div className={cn(
                           "absolute right-2 top-1/2 transform -translate-y-1/2 text-xs font-medium rounded-full px-1.5 py-0.5",
-                          theme === 'light' ? "bg-amber-100 text-amber-800" : "bg-amber-900/30 text-amber-400"
+                          getThemeClasses({
+                            light: "bg-amber-100 text-amber-800",
+                            dark: "bg-amber-900/30 text-amber-400"
+                          })
                         )}>
                           Large
                         </div>
@@ -423,7 +593,10 @@ export default function Home() {
                   <div>
                     <Label
                       htmlFor="borderRadius"
-                      className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                      className={getThemeClasses({
+                        light: "text-gray-700",
+                        dark: "text-gray-200"
+                      })}
                     >
                       Radius (px)
                     </Label>
@@ -445,7 +618,12 @@ export default function Home() {
                       }}
                       className={cn(
                         "mt-1",
-                        theme === 'light' ? "bg-white" : "bg-gray-800 border-gray-700 text-gray-200"
+                        getThemeClasses({
+                          light: "bg-white",
+                          dark: "bg-gray-800 border-gray-700 text-gray-200",
+                          lightHighContrast: "bg-white border-2 border-black text-black",
+                          darkHighContrast: "bg-black border-2 border-white text-white"
+                        })
                       )}
                       min={0}
                       max={1000}
@@ -459,7 +637,10 @@ export default function Home() {
                     <div className="flex items-center gap-1.5">
                       <Label
                         htmlFor="initialAnimationSpeed"
-                        className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                        className={getThemeClasses({
+                          light: "text-gray-700",
+                          dark: "text-gray-200"
+                        })}
                       >
                         Initial Animation Speed
                       </Label>
@@ -469,7 +650,10 @@ export default function Home() {
                             variant="ghost"
                             className={cn(
                               "h-4 w-4 p-0 hover:bg-transparent",
-                              theme === 'light' ? "text-gray-400 hover:text-gray-600" : "text-gray-500 hover:text-gray-400"
+                              getThemeClasses({
+                                light: "text-gray-400 hover:text-gray-600",
+                                dark: "text-gray-500 hover:text-gray-400"
+                              })
                             )}
                           >
                             <Info className="h-4 w-4" />
@@ -478,9 +662,10 @@ export default function Home() {
                         <TooltipContent
                           className={cn(
                             "text-sm p-3 w-64",
-                            theme === 'light'
-                              ? "bg-white text-gray-700"
-                              : "bg-gray-800 text-gray-200 border-gray-700"
+                            getThemeClasses({
+                              light: "bg-white text-gray-700",
+                              dark: "bg-gray-800 text-gray-200 border-gray-700"
+                            })
                           )}
                         >
                           When set to 0, the progress bar will appear instantly without any initial animation. Higher values will make the progress bar animate from 0% to the target progress value. more = faster
@@ -489,9 +674,12 @@ export default function Home() {
                     </div>
                     <span className={cn(
                       "text-sm font-medium px-2 py-1 rounded-md",
-                      theme === 'light'
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-blue-900/30 text-blue-300"
+                      getThemeClasses({
+                        light: "bg-blue-100 text-blue-700",
+                        dark: "bg-blue-900/30 text-blue-300",
+                        lightHighContrast: "text-black",
+                        darkHighContrast: "text-white"
+                      })
                     )} aria-label="initialAnimationSpeed-value">
                       {params.initialAnimationSpeed.toFixed(1)}x
                     </span>
@@ -506,9 +694,10 @@ export default function Home() {
                     onValueChange={(value: number[]) => setParams({ ...params, initialAnimationSpeed: value[0] })}
                     className={cn(
                       "mt-2",
-                      theme === 'light'
-                        ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md"
-                        : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                      getThemeClasses({
+                        light: "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md",
+                        dark: "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                      })
                     )}
                     aria-label="initial animation speed"
                   />
@@ -516,7 +705,10 @@ export default function Home() {
 
                 <div className="space-y-3 mt-4">
                   <Label
-                    className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                    className={getThemeClasses({
+                      light: "text-gray-700",
+                      dark: "text-gray-200"
+                    })}
                   >
                     Effects
                   </Label>
@@ -535,15 +727,19 @@ export default function Home() {
                           className={cn(
                             "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
                             "focus:outline-none focus:ring-2 focus:ring-offset-2",
-                            theme === 'light'
-                              ? "border-gray-300 focus:ring-blue-400 focus:ring-offset-white"
-                              : "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
+                            getThemeClasses({
+                              light: "border-gray-300 focus:ring-blue-400 focus:ring-offset-white",
+                              dark: "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
+                            })
                           )}
                         />
                         <svg
                           className={cn(
                             "pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity",
-                            theme === 'light' ? "text-blue-600" : "text-blue-400"
+                            getThemeClasses({
+                              light: "text-blue-600",
+                              dark: "text-blue-400"
+                            })
                           )}
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -558,7 +754,10 @@ export default function Home() {
                       </div>
                       <Label
                         htmlFor="striped"
-                        className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                        className={getThemeClasses({
+                          light: "text-gray-700",
+                          dark: "text-gray-200"
+                        })}
                       >
                         Striped
                       </Label>
@@ -580,15 +779,19 @@ export default function Home() {
                           className={cn(
                             "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
                             "focus:outline-none focus:ring-2 focus:ring-offset-2",
-                            theme === 'light'
-                              ? "border-gray-300 focus:ring-blue-400 focus:ring-offset-white"
-                              : "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
+                            getThemeClasses({
+                              light: "border-gray-300 focus:ring-blue-400 focus:ring-offset-white",
+                              dark: "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
+                            })
                           )}
                         />
                         <svg
                           className={cn(
                             "pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity",
-                            theme === 'light' ? "text-blue-600" : "text-blue-400"
+                            getThemeClasses({
+                              light: "text-blue-600",
+                              dark: "text-blue-400"
+                            })
                           )}
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -603,7 +806,10 @@ export default function Home() {
                       </div>
                       <Label
                         htmlFor="animated"
-                        className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                        className={getThemeClasses({
+                          light: "text-gray-700",
+                          dark: "text-gray-200"
+                        })}
                       >
                         Animated
                       </Label>
@@ -615,15 +821,21 @@ export default function Home() {
                       <div className="flex justify-between items-center">
                         <Label
                           htmlFor="animationSpeed"
-                          className={theme === 'light' ? "text-gray-700" : "text-gray-200"}
+                          className={getThemeClasses({
+                            light: "text-gray-700",
+                            dark: "text-gray-200"
+                          })}
                         >
                           Animation Speed
                         </Label>
                         <span className={cn(
                           "text-sm font-medium px-2 py-1 rounded-md",
-                          theme === 'light'
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-blue-900/30 text-blue-300"
+                          getThemeClasses({
+                            light: "bg-blue-100 text-blue-700",
+                            dark: "bg-blue-900/30 text-blue-300",
+                            lightHighContrast: "text-black",
+                            darkHighContrast: "text-white"
+                          })
                         )} aria-label="animationSpeed-value">
                           {params.animationSpeed.toFixed(1)}x
                         </span>
@@ -637,15 +849,22 @@ export default function Home() {
                         onValueChange={(value) => setParams({ ...params, animationSpeed: value[0] })}
                         className={cn(
                           "mt-2",
-                          theme === 'light'
-                            ? "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md"
-                            : "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                          getThemeClasses({
+                            light: "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md",
+                            dark: "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                          })
                         )}
                         aria-label="animation speed"
                       />
                       <div className="flex justify-between text-xs">
-                        <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Slower</span>
-                        <span className={theme === 'light' ? "text-gray-500" : "text-gray-400"}>Faster</span>
+                        <span className={getThemeClasses({
+                          light: "text-gray-500",
+                          dark: "text-gray-400"
+                        })}>Slower</span>
+                        <span className={getThemeClasses({
+                          light: "text-gray-500",
+                          dark: "text-gray-400"
+                        })}>Faster</span>
                       </div>
                     </div>
                   )}
@@ -655,10 +874,16 @@ export default function Home() {
               <div className="md:col-span-7 space-y-6">
                 <div className="w-full">
                   <div className="flex items-center gap-2 mb-4">
-                    <Palette className={cn("h-5 w-5", theme === 'light' ? "text-purple-500" : "text-purple-400")} />
+                    <Palette className={cn("h-5 w-5", getThemeClasses({
+                      light: "text-purple-500",
+                      dark: "text-purple-400"
+                    }))} />
                     <h2 className={cn(
                       "text-xl sm:text-2xl font-semibold",
-                      theme === 'light' ? "text-gray-800" : "text-gray-100"
+                      getThemeClasses({
+                        light: "text-gray-800",
+                        dark: "text-gray-100"
+                      })
                     )}>
                       Preview
                     </h2>
@@ -669,7 +894,10 @@ export default function Home() {
                           size="icon"
                           className={cn(
                             "ml-2 transition-all hover:scale-110",
-                            theme === 'light' ? "text-gray-500 hover:text-gray-700" : "text-gray-400 hover:text-gray-200"
+                            getThemeClasses({
+                              light: "text-gray-500 hover:text-gray-700",
+                              dark: "text-gray-400 hover:text-gray-200"
+                            })
                           )}
                           onClick={() => setIframeKey(prev => prev + 1)}
                           aria-label="reload preview"
@@ -680,9 +908,10 @@ export default function Home() {
                       <TooltipContent
                         className={cn(
                           "text-sm p-2",
-                          theme === 'light'
-                            ? "bg-white text-gray-700"
-                            : "bg-gray-800 text-gray-200 border-gray-700"
+                          getThemeClasses({
+                            light: "bg-white text-gray-700",
+                            dark: "bg-gray-800 text-gray-200 border-gray-700"
+                          })
                         )}
                       >
                         Reload preview to play initial animation again
@@ -692,9 +921,12 @@ export default function Home() {
 
                   <div className={cn(
                     "rounded-lg transition-all border overflow-hidden",
-                    theme === 'light'
-                      ? "bg-gray-50 border-gray-100"
-                      : "bg-gray-900 border-gray-700"
+                    getThemeClasses({
+                      light: "bg-gray-50 border-gray-100",
+                      dark: "bg-gray-900 border-gray-700",
+                      lightHighContrast: "bg-white border-2 border-black",
+                      darkHighContrast: "bg-black border-2 border-white"
+                    })
                   )}>
                     <div
                       className="p-4 sm:p-6 md:p-10 overflow-auto"
@@ -717,9 +949,10 @@ export default function Home() {
                           style={{
                             border: 'none',
                             overflow: 'hidden',
-                            boxShadow: theme === 'light'
-                              ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                              : '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)'
+                            boxShadow: getThemeClasses({
+                              light: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                              dark: '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)'
+                            })
                           }}
                           title="Progress Bar Preview"
                           loading="eager"
@@ -729,9 +962,10 @@ export default function Home() {
                     {params.width > 500 && (
                       <div className={cn(
                         "py-2 px-4 text-xs text-center border-t",
-                        theme === 'light'
-                          ? "text-gray-500 border-gray-100"
-                          : "text-gray-400 border-gray-700"
+                        getThemeClasses({
+                          light: "text-gray-500 border-gray-100",
+                          dark: "text-gray-400 border-gray-700"
+                        })
                       )}>
                         <span>Scroll horizontally to view the entire progress bar →</span>
                       </div>
@@ -741,10 +975,16 @@ export default function Home() {
 
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <Code className={cn("h-5 w-5", theme === 'light' ? "text-green-500" : "text-green-400")} />
+                    <Code className={cn("h-5 w-5", getThemeClasses({
+                      light: "text-green-500",
+                      dark: "text-green-400"
+                    }))} />
                     <h2 className={cn(
                       "text-xl sm:text-2xl font-semibold",
-                      theme === 'light' ? "text-gray-800" : "text-gray-100"
+                      getThemeClasses({
+                        light: "text-gray-800",
+                        dark: "text-gray-100"
+                      })
                     )}>
                       Integration
                     </h2>
@@ -753,9 +993,10 @@ export default function Home() {
                   {params.width > 1000 && (
                     <div className={cn(
                       "mb-4 p-3 text-sm rounded-md",
-                      theme === 'light'
-                        ? "bg-amber-50 text-amber-800 border border-amber-200"
-                        : "bg-amber-900/20 text-amber-300 border border-amber-800/30"
+                      getThemeClasses({
+                        light: "bg-amber-50 text-amber-800 border border-amber-200",
+                        dark: "bg-amber-900/20 text-amber-300 border border-amber-800/30"
+                      })
                     )}>
                       <div className="flex gap-2 items-center">
                         <Info className="h-4 w-4 flex-shrink-0" />
@@ -771,27 +1012,48 @@ export default function Home() {
                     <TabsList
                       className={cn(
                         "grid w-full grid-cols-3 mb-6",
-                        theme === 'light'
-                          ? "bg-gray-100"
-                          : "bg-gray-700"
+                        getThemeClasses({
+                          light: "bg-gray-100",
+                          dark: "bg-gray-700",
+                          lightHighContrast: "bg-white border-2 border-black",
+                          darkHighContrast: "bg-black border-2 border-white [&_[data-state=active]]:bg-white [&_[data-state=active]]:text-black"
+                        })
                       )}
                     >
                       <TabsTrigger
                         value="url"
-                        className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
+                        className={cn(
+                          getThemeClasses({
+                            light: "",
+                            dark: "data-[state=active]:bg-gray-600",
+                            darkHighContrast: "text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                          })
+                        )}
                       >
                         URL
                       </TabsTrigger>
                       <TabsTrigger
                         value="markdown"
-                        className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
+                        className={cn(
+                          getThemeClasses({
+                            light: "",
+                            dark: "data-[state=active]:bg-gray-600",
+                            darkHighContrast: "text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                          })
+                        )}
                         aria-label="markdown-tab-trigger"
                       >
                         Markdown
                       </TabsTrigger>
                       <TabsTrigger
                         value="html"
-                        className={theme === 'dark' ? "data-[state=active]:bg-gray-600" : ""}
+                        className={cn(
+                          getThemeClasses({
+                            light: "",
+                            dark: "data-[state=active]:bg-gray-600",
+                            darkHighContrast: "text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                          })
+                        )}
                       >
                         HTML
                       </TabsTrigger>
@@ -804,9 +1066,12 @@ export default function Home() {
                           readOnly
                           className={cn(
                             "pr-10",
-                            theme === 'light'
-                              ? "bg-gray-50"
-                              : "bg-gray-900 border-gray-700 text-gray-200"
+                            getThemeClasses({
+                              light: "bg-gray-50",
+                              dark: "bg-gray-900 border-gray-700 text-gray-200",
+                              lightHighContrast: "bg-white border-2 border-black text-black",
+                              darkHighContrast: "bg-black border-2 border-white text-white"
+                            })
                           )}
                         />
                         <Button
@@ -819,7 +1084,10 @@ export default function Home() {
                           {copied === 'url' ? (
                             <Check className="h-4 w-4 text-green-500" data-testid="check-icon" />
                           ) : (
-                            <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
+                            <Copy className={cn("h-4 w-4", getThemeClasses({
+                              light: "text-gray-500",
+                              dark: "text-gray-400"
+                            }))} />
                           )}
                         </Button>
                       </div>
@@ -835,9 +1103,12 @@ export default function Home() {
                           readOnly
                           className={cn(
                             "pr-10",
-                            theme === 'light'
-                              ? "bg-gray-50"
-                              : "bg-gray-900 border-gray-700 text-gray-200"
+                            getThemeClasses({
+                              light: "bg-gray-50",
+                              dark: "bg-gray-900 border-gray-700 text-gray-200",
+                              lightHighContrast: "bg-white border-2 border-black text-black",
+                              darkHighContrast: "bg-black border-2 border-white text-white"
+                            })
                           )}
                         />
 
@@ -851,7 +1122,10 @@ export default function Home() {
                           {copied === 'markdown' ? (
                             <Check className="h-4 w-4 text-green-500" data-testid="check-icon" />
                           ) : (
-                            <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
+                            <Copy className={cn("h-4 w-4", getThemeClasses({
+                              light: "text-gray-500",
+                              dark: "text-gray-400"
+                            }))} />
                           )}
                         </Button>
                       </div>
@@ -864,9 +1138,12 @@ export default function Home() {
                           readOnly
                           className={cn(
                             "pr-10",
-                            theme === 'light'
-                              ? "bg-gray-50"
-                              : "bg-gray-900 border-gray-700 text-gray-200"
+                            getThemeClasses({
+                              light: "bg-gray-50",
+                              dark: "bg-gray-900 border-gray-700 text-gray-200",
+                              lightHighContrast: "bg-white border-2 border-black text-black",
+                              darkHighContrast: "bg-black border-2 border-white text-white"
+                            })
                           )}
                         />
                         <Button
@@ -879,7 +1156,10 @@ export default function Home() {
                           {copied === 'html' ? (
                             <Check className="h-4 w-4 text-green-500" data-testid="check-icon" />
                           ) : (
-                            <Copy className={cn("h-4 w-4", theme === 'light' ? "text-gray-500" : "text-gray-400")} />
+                            <Copy className={cn("h-4 w-4", getThemeClasses({
+                              light: "text-gray-500",
+                              dark: "text-gray-400"
+                            }))} />
                           )}
                         </Button>
                       </div>
@@ -892,16 +1172,27 @@ export default function Home() {
         </div>
 
         <Card className={cn(
-          "p-6 mt-8 border-0 shadow-xl",
-          theme === 'light'
-            ? "bg-white/80 backdrop-blur-sm"
-            : "bg-gray-800/80 backdrop-blur-sm border-gray-700"
+          "p-6 mt-8",
+          highContrast
+            ? theme === 'light'
+              ? "bg-white border-2 border-black"
+              : "bg-black border-2 border-white"
+            : getThemeClasses({
+                light: "bg-white/80 backdrop-blur-sm border-0",
+                dark: "bg-gray-800/80 backdrop-blur-sm border-gray-700"
+              })
         )}>
           <div className="flex items-center gap-2 mb-6">
-            <Info className={cn("h-5 w-5", theme === 'light' ? "text-orange-500" : "text-orange-400")} />
+            <Info className={cn("h-5 w-5", getThemeClasses({
+              light: "text-orange-500",
+              dark: "text-orange-400"
+            }))} />
             <h2 className={cn(
               "text-2xl font-semibold",
-              theme === 'light' ? "text-gray-800" : "text-gray-100"
+              getThemeClasses({
+                light: "text-gray-800",
+                dark: "text-gray-100"
+              })
             )}>
               How to Use
             </h2>
@@ -909,7 +1200,10 @@ export default function Home() {
 
           <div className={cn(
             "space-y-4 text-base leading-relaxed",
-            theme === 'light' ? "text-gray-700" : "text-gray-200"
+            getThemeClasses({
+              light: "text-gray-700",
+              dark: "text-gray-200"
+            })
           )}>
             <p>
               Create customizable progress bars for your projects in just a few steps:
@@ -924,7 +1218,10 @@ export default function Home() {
             <div className="pt-2">
               <h3 className={cn(
                 "text-lg font-medium mb-2",
-                theme === 'light' ? "text-gray-800" : "text-gray-100"
+                getThemeClasses({
+                  light: "text-gray-800",
+                  dark: "text-gray-100"
+                })
               )}>
                 Available Options
               </h3>
@@ -933,7 +1230,10 @@ export default function Home() {
                 <div className="flex items-start gap-2">
                   <div className={cn(
                     "w-2 h-2 rounded-full mt-1.5",
-                    theme === 'light' ? "bg-blue-500" : "bg-blue-400"
+                    getThemeClasses({
+                      light: "bg-blue-500",
+                      dark: "bg-blue-400"
+                    })
                   )}></div>
                   <span><strong>Progress</strong> - Percentage of completion (0-100)</span>
                 </div>
@@ -941,7 +1241,10 @@ export default function Home() {
                 <div className="flex items-start gap-2">
                   <div className={cn(
                     "w-2 h-2 rounded-full mt-1.5",
-                    theme === 'light' ? "bg-blue-500" : "bg-blue-400"
+                    getThemeClasses({
+                      light: "bg-blue-500",
+                      dark: "bg-blue-400"
+                    })
                   )}></div>
                   <span><strong>Color</strong> - The color of the progress bar</span>
                 </div>
@@ -949,7 +1252,10 @@ export default function Home() {
                 <div className="flex items-start gap-2">
                   <div className={cn(
                     "w-2 h-2 rounded-full mt-1.5",
-                    theme === 'light' ? "bg-blue-500" : "bg-blue-400"
+                    getThemeClasses({
+                      light: "bg-blue-500",
+                      dark: "bg-blue-400"
+                    })
                   )}></div>
                   <span><strong>Background Color</strong> - The color of the progress bar&apos;s background</span>
                 </div>
@@ -957,7 +1263,10 @@ export default function Home() {
                 <div className="flex items-start gap-2">
                   <div className={cn(
                     "w-2 h-2 rounded-full mt-1.5",
-                    theme === 'light' ? "bg-blue-500" : "bg-blue-400"
+                    getThemeClasses({
+                      light: "bg-blue-500",
+                      dark: "bg-blue-400"
+                    })
                   )}></div>
                   <span><strong>Height</strong> - Height in pixels</span>
                 </div>
@@ -965,7 +1274,10 @@ export default function Home() {
                 <div className="flex items-start gap-2">
                   <div className={cn(
                     "w-2 h-2 rounded-full mt-1.5",
-                    theme === 'light' ? "bg-blue-500" : "bg-blue-400"
+                    getThemeClasses({
+                      light: "bg-blue-500",
+                      dark: "bg-blue-400"
+                    })
                   )}></div>
                   <span><strong>Width</strong> - Width in pixels</span>
                 </div>
@@ -973,7 +1285,10 @@ export default function Home() {
                 <div className="flex items-start gap-2">
                   <div className={cn(
                     "w-2 h-2 rounded-full mt-1.5",
-                    theme === 'light' ? "bg-blue-500" : "bg-blue-400"
+                    getThemeClasses({
+                      light: "bg-blue-500",
+                      dark: "bg-blue-400"
+                    })
                   )}></div>
                   <span><strong>Border Radius</strong> - Rounded corners in pixels</span>
                 </div>
@@ -981,7 +1296,10 @@ export default function Home() {
                 <div className="flex items-start gap-2">
                   <div className={cn(
                     "w-2 h-2 rounded-full mt-1.5",
-                    theme === 'light' ? "bg-blue-500" : "bg-blue-400"
+                    getThemeClasses({
+                      light: "bg-blue-500",
+                      dark: "bg-blue-400"
+                    })
                   )}></div>
                   <span><strong>Effects</strong> - Striped and animated options</span>
                 </div>
@@ -992,7 +1310,12 @@ export default function Home() {
 
         <footer className={cn(
           "mt-12 text-center py-6",
-          theme === 'light' ? "text-gray-500" : "text-gray-400"
+          getThemeClasses({
+            light: "text-gray-500",
+            dark: "text-gray-400",
+            lightHighContrast: "text-black",
+            darkHighContrast: "text-white"
+          })
         )}>
           <p className="text-sm">
             Made with ❤️ by <a href="https://github.com/entcheneric" className="underline">EntchenEric</a> 🦆

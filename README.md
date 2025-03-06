@@ -2,9 +2,9 @@
 
 A modern web service to generate and embed customizable progress bars anywhere! Create beautiful progress bars with our intuitive UI and embed them in your projects.
 
-🌐 **[Try it live](https://progress-bars-eight.vercel.app)**
+🌐 **[Try it live](https://progress-bars.entcheneric.com)**
 
-![Progress Bar Generator](https://progress-bars-eight.vercel.app/bar?progress=75&color=%232563eb&height=20&width=200&borderRadius=10)
+![Progress Bar Generator](https://progress-bars.entcheneric.com/bar?progress=75&color=%232563eb&height=20&width=200&borderRadius=10)
 
 ## Features
 
@@ -21,31 +21,31 @@ A modern web service to generate and embed customizable progress bars anywhere! 
 Simply use our URL with query parameters to create your progress bar:
 
 ```
-https://progress-bars-eight.vercel.app/bar?progress=75&color=%232563eb
+https://progress-bars.entcheneric.com/bar?progress=75&color=%232563eb
 ```
 
-Or visit our [web interface](https://progress-bars-eight.vercel.app) to customize your progress bar visually.
+Or visit our [web interface](https://progress-bars.entcheneric.com) to customize your progress bar visually.
 
 ## Usage Examples
 
 ### Basic Progress Bar (75% Complete)
 ```
-https://progress-bars-eight.vercel.app/bar?progress=75
+https://progress-bars.entcheneric.com/bar?progress=75
 ```
 
 ### Custom Styled Progress Bar
 ```
-https://progress-bars-eight.vercel.app/bar?progress=80&color=%232563eb&backgroundColor=%23f8fafc&height=30&width=200&borderRadius=10&striped=true&animated=true&animationSpeed=1.5
+https://progress-bars.entcheneric.com/bar?progress=80&color=%232563eb&backgroundColor=%23f8fafc&height=30&width=200&borderRadius=10&striped=true&animated=true&animationSpeed=1.5
 ```
 
 ### Use in Markdown
 ```markdown
-![Progress](https://progress-bars-eight.vercel.app/bar?progress=75&color=%2316a34a)
+![Progress](https://progress-bars.entcheneric.com/bar?progress=75&color=%2316a34a)
 ```
 
 ### Use in HTML
 ```html
-<img src="https://progress-bars-eight.vercel.app/bar?progress=75&color=%232563eb" alt="Progress Bar">
+<img src="https://progress-bars.entcheneric.com/bar?progress=75&color=%232563eb" alt="Progress Bar">
 ```
 
 ## Customization Parameters
@@ -70,19 +70,19 @@ All parameters are optional and have sensible defaults:
 
 ### GitHub README Progress
 ```markdown
-![Project Status](https://progress-bars-eight.vercel.app/bar?progress=80&color=%2316a34a)
+![Project Status](https://progress-bars.entcheneric.com/bar?progress=80&color=%2316a34a)
 ```
 
 ### Documentation Status
 ```markdown
-Documentation: ![60% Complete](https://progress-bars-eight.vercel.app/bar?progress=60&color=%23ea580c)
+Documentation: ![60% Complete](https://progress-bars.entcheneric.com/bar?progress=60&color=%23ea580c)
 ```
 
 ### Project Milestones
 ```markdown
-Phase 1: ![Complete](https://progress-bars-eight.vercel.app/bar?progress=100&color=%2316a34a)
-Phase 2: ![In Progress](https://progress-bars-eight.vercel.app/bar?progress=45&color=%232563eb)
-Phase 3: ![Not Started](https://progress-bars-eight.vercel.app/bar?progress=0&color=%236b7280)
+Phase 1: ![Complete](https://progress-bars.entcheneric.com/bar?progress=100&color=%2316a34a)
+Phase 2: ![In Progress](https://progress-bars.entcheneric.com/bar?progress=45&color=%232563eb)
+Phase 3: ![Not Started](https://progress-bars.entcheneric.com/bar?progress=0&color=%236b7280)
 ```
 
 ## Tips
@@ -106,11 +106,11 @@ MIT License - Use it anywhere you like!
 ### Gradient Colors
 You can use gradients instead of solid colors for more dynamic progress bars:
 ```markdown
-![Gradient Progress](https://progress-bars-eight.vercel.app/bar?progress=80&colorGradient=linear-gradient(90deg,%20%230ea5e9,%20%232563eb,%20%234f46e5))
+![Gradient Progress](https://progress-bars.entcheneric.com/bar?progress=80&colorGradient=linear-gradient(90deg,%20%230ea5e9,%20%232563eb,%20%234f46e5))
 ```
 
 Example:
-![Gradient Progress](https://progress-bars-eight.vercel.app/bar?progress=80&colorGradient=linear-gradient(90deg,%20%230ea5e9,%20%232563eb,%20%234f46e5))
+![Gradient Progress](https://progress-bars.entcheneric.com/bar?progress=80&colorGradient=linear-gradient(90deg,%20%230ea5e9,%20%232563eb,%20%234f46e5))
 
 ### Initial Animation
 Control how the progress bar fills initially:
@@ -118,11 +118,11 @@ Control how the progress bar fills initially:
 - Use higher values for faster fill animation
 - Use lower values for slower fill animation
 ```markdown
-![Animated Fill](https://progress-bars-eight.vercel.app/bar?progress=75&initialAnimationSpeed=0.5)
+![Animated Fill](https://progress-bars.entcheneric.com/bar?progress=75&initialAnimationSpeed=0.5)
 ```
 
 Example:
-![Animated Fill](https://progress-bars-eight.vercel.app/bar?progress=75&initialAnimationSpeed=0.5)
+![Animated Fill](https://progress-bars.entcheneric.com/bar?progress=75&initialAnimationSpeed=0.5)
 
 ### Animation Effects
 The progress bar can have animated stripes that move from right to left:
@@ -131,11 +131,11 @@ The progress bar can have animated stripes that move from right to left:
 3. Control the animation speed with `animationSpeed` (default: 1)
 
 ```markdown
-![Striped Animated](https://progress-bars-eight.vercel.app/bar?progress=75&striped=true&animated=true&animationSpeed=1.5)
+![Striped Animated](https://progress-bars.entcheneric.com/bar?progress=75&striped=true&animated=true&animationSpeed=1.5)
 ```
 
 Example:
-![Striped Animated](https://progress-bars-eight.vercel.app/bar?progress=75&striped=true&animated=true&animationSpeed=1.5)
+![Striped Animated](https://progress-bars.entcheneric.com/bar?progress=75&striped=true&animated=true&animationSpeed=1.5)
 
 Note: The `animated` parameter only affects the stripe animation and requires `striped=true` to work.
 
@@ -149,13 +149,13 @@ Note: The `animated` parameter only affects the stripe animation and requires `s
 Here are some example combinations:
 
 High contrast:
-![High Contrast](https://progress-bars-eight.vercel.app/bar?progress=60&color=%23000000&backgroundColor=%23ffffff)
+![High Contrast](https://progress-bars.entcheneric.com/bar?progress=60&color=%23000000&backgroundColor=%23ffffff)
 
 Extra rounded:
-![Extra Rounded](https://progress-bars-eight.vercel.app/bar?progress=85&borderRadius=30&height=40)
+![Extra Rounded](https://progress-bars.entcheneric.com/bar?progress=85&borderRadius=30&height=40)
 
 Thin line:
-![Thin Line](https://progress-bars-eight.vercel.app/bar?progress=45&height=5&borderRadius=2)
+![Thin Line](https://progress-bars.entcheneric.com/bar?progress=45&height=5&borderRadius=2)
 
 Sunset gradient with stripes:
-![Sunset Gradient](https://progress-bars-eight.vercel.app/bar?progress=90&colorGradient=linear-gradient(90deg,%20%23f97316,%20%23db2777,%20%237c3aed)&striped=true)
+![Sunset Gradient](https://progress-bars.entcheneric.com/bar?progress=90&colorGradient=linear-gradient(90deg,%20%23f97316,%20%23db2777,%20%237c3aed)&striped=true)

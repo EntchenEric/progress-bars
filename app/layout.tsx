@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Progress Bar Generator',
     description: 'Create beautiful, customizable progress bars for your projects with just a few clicks',
-    url: 'https://progress-bars-eight.vercel.app',
+    url: 'https://progress-bars.entcheneric.com',
     siteName: 'Progress Bar Generator',
     type: 'website',
     images: [

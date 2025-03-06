@@ -116,7 +116,7 @@ describe('Progress Bar Generator', () => {
     describe('URL Generation and Copying', () => {
         it('generates correct URL with current parameters', () => {
             render(<Page />)
-            const urlInput = screen.getByDisplayValue(/^https:\/\/progress-bars-eight\.vercel\.app\/bar\?/)
+            const urlInput = screen.getByDisplayValue(/^https:\/\/progress-bars\.entcheneric\.com\/bar\?/)
             expect(urlInput.value).toContain('progress=75')
             expect(urlInput.value).toContain('color=%232563eb')
         })
@@ -130,7 +130,7 @@ describe('Progress Bar Generator', () => {
             })
 
             expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-                expect.stringMatching(/^https:\/\/progress-bars-eight\.vercel\.app\/bar\?/)
+                expect.stringMatching(/^https:\/\/progress-bars\.entcheneric\.com\/bar\?/)
             )
         })
 

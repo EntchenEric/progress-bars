@@ -30,7 +30,6 @@ export default function Home() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [highContrast, setHighContrast] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [iframeKey, setIframeKey] = useState(0)
   const [ariaMessage, setAriaMessage] = useState('')
 
   useEffect(() => {
@@ -99,7 +98,6 @@ export default function Home() {
     setHighContrast(!highContrast)
   }
 
-  // High contrast color overrides
   const getHighContrastColors = (isLight: boolean) => {
     return {
       text: isLight ? 'text-black' : 'text-white',
@@ -110,7 +108,6 @@ export default function Home() {
     }
   }
 
-  // Helper function to get theme-based classes
   const getThemeClasses = (options: {
     light: string,
     dark: string,
@@ -899,7 +896,7 @@ export default function Home() {
                             setParams({
                               ...params,
                               animated: isChecked,
-                              striped: isChecked ? true : params.striped // Force striped to be true when animated is checked
+                              striped: isChecked ? true : params.striped
                             });
                           }}
                           className={cn(
@@ -1025,7 +1022,6 @@ export default function Home() {
                               dark: "text-gray-400 hover:text-gray-200"
                             })
                           )}
-                          onClick={() => setIframeKey(prev => prev + 1)}
                           aria-label="reload preview"
                         >
                           <RotateCw className="h-4 w-4" />
@@ -1065,8 +1061,7 @@ export default function Home() {
                         display: 'flex',
                         justifyContent: 'center'
                       }}>
-                        <iframe
-                          key={iframeKey}
+                        <img
                           src={generateUrl()}
                           width={params.width}
                           height={params.height}

@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
-  const color = searchParams.get('color') || '#2563eb';
+  const color = searchParams.get('color') || '#3b82f6';
   const colorGradient = searchParams.get('colorGradient');
-  const backgroundColor = searchParams.get('backgroundColor') || '#f3f4f6';
-  const progress = parseIntSafe(searchParams.get('progress'), 0);
-  const height = Math.min(500, Math.max(5, parseIntSafe(searchParams.get('height'), 5)));
-  const width = Math.min(3000, Math.max(10, parseIntSafe(searchParams.get('width'), 10)));
-  const borderRadius = Math.min(1000, Math.max(0, parseIntSafe(searchParams.get('borderRadius'), 0)));
+  const backgroundColor = searchParams.get('backgroundColor') || '#e5e7eb';
+  const progress = parseIntSafe(searchParams.get('progress'), 65);
+  const height = Math.min(500, Math.max(5, parseIntSafe(searchParams.get('height'), 24)));
+  const width = Math.min(3000, Math.max(10, parseIntSafe(searchParams.get('width'), 400)));
+  const borderRadius = Math.min(1000, Math.max(0, parseIntSafe(searchParams.get('borderRadius'), 12)));
   const striped = searchParams.get('striped') === 'true';
   const animated = searchParams.get('animated') === 'true';
   const animationSpeed = parseFloatSafe(searchParams.get('animationSpeed'), 0);
@@ -26,10 +26,8 @@ export async function GET(request: NextRequest) {
   const shouldAnimate = initialAnimationSpeed > 0;
   const initialAnimationDuration = (clampedProgress / 100) * (1 / initialAnimationSpeed);
   
-  // Helper function to create gradient definition
   const createGradientDef = () => {
     if (colorGradient) {
-      // Extract colors and positions from gradient string
       const matches = colorGradient.match(/(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|rgba?\([^)]+\))/g) || [];
       if (matches.length >= 2) {
         return `
@@ -41,7 +39,6 @@ export async function GET(request: NextRequest) {
         `;
       }
     }
-    // Fallback to default gradient using single color
     return `
       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" style="stop-color:${color}; stop-opacity:1" />
@@ -76,7 +73,6 @@ export async function GET(request: NextRequest) {
       </filter>
     </defs>
     
-    <!-- Background -->
     <rect
       width="${width}"
       height="${height}"
@@ -85,10 +81,7 @@ export async function GET(request: NextRequest) {
       fill="${backgroundColor}"
       filter="url(#shadow)"
     />
-    
-    <!-- Progress bar -->
     <g clip-path="url(#progressClip)">
-      <!-- Main fill -->
       <rect
         width="${width}"
         height="${height}"
@@ -98,7 +91,6 @@ export async function GET(request: NextRequest) {
       />
       
       ${striped ? `
-      <!-- Striped overlay -->
       <rect
         width="${progressWidth}"
         height="${height}"
@@ -108,7 +100,6 @@ export async function GET(request: NextRequest) {
       ` : ''}
     </g>
     
-    <!-- Rounded corners overlay to ensure proper rounding -->
     <rect
       width="${width}"
       height="${height}"
@@ -120,7 +111,6 @@ export async function GET(request: NextRequest) {
       opacity="0.5"
     />
     
-    <!-- Animation definitions -->
     <style>
       @keyframes progress-stripes {
         from { background-position: ${50 * safeAnimationSpeed}px 0; }
@@ -174,7 +164,6 @@ function adjustColor(color: string, amount: number): string {
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 }
 
-// Helper function to safely parse integers with fallback
 function parseIntSafe(value: string | null, defaultValue: number): number {
   if (value === null || value === undefined || value === '') {
     return defaultValue;
@@ -184,7 +173,6 @@ function parseIntSafe(value: string | null, defaultValue: number): number {
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
-// Helper function to safely parse floats with fallback
 function parseFloatSafe(value: string | null, defaultValue: number): number {
   if (value === null || value === undefined || value === '') {
     return defaultValue;

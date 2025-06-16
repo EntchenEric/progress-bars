@@ -63,7 +63,7 @@ export default function Home() {
       colorGradient: params.colorGradient || undefined,
     };
 
-    const baseUrl = 'https://progress-bars-eight.vercel.app/bar'
+    const baseUrl = 'https://progress-bars.entcheneric.com/bar'
     const queryParams = new URLSearchParams({
       progress: safeValues.progress.toString(),
       color: safeValues.color,

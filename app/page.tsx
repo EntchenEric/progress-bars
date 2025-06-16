@@ -11,6 +11,11 @@ import { cn } from '@/lib/utils'
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
+/**
+ * Renders the main Progress Bar Generator application UI.
+ *
+ * Provides an interactive interface for customizing, previewing, and integrating progress bars with real-time updates, theme and high contrast support, accessibility features, and copy-to-clipboard integration options.
+ */
 export default function Home() {
   const [params, setParams] = useState({
     progress: 75,

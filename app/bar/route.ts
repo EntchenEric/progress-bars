@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Handles GET requests to generate a customizable SVG progress bar image.
+ *
+ * Extracts query parameters from the request URL to configure the progress bar's appearance, including color, gradient, background, progress value, dimensions, border radius, striped and animated effects, and animation speeds. Returns an SVG image as the response.
+ *
+ * @returns A `NextResponse` containing the generated SVG progress bar with appropriate headers.
+ */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
@@ -150,6 +157,15 @@ export async function GET(request: NextRequest) {
   });
 }
 
+/**
+ * Returns a hex color string with its RGB channels lightened or darkened by a specified amount.
+ *
+ * @param color - A hex color string in the format `#RRGGBB`.
+ * @param amount - The integer value to add to each RGB channel; positive to lighten, negative to darken.
+ * @returns The adjusted hex color string.
+ *
+ * @remark If the adjustment causes a channel to exceed 255 or drop below 0, it is clamped to the valid range.
+ */
 function adjustColor(color: string, amount: number): string {
   color = color.replace('#', '');
   
@@ -164,6 +180,13 @@ function adjustColor(color: string, amount: number): string {
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 }
 
+/**
+ * Safely parses a string as an integer, returning a default value if parsing fails.
+ *
+ * @param value - The string to parse.
+ * @param defaultValue - The value to return if {@link value} is null, empty, or not a valid integer.
+ * @returns The parsed integer, or {@link defaultValue} if parsing is unsuccessful.
+ */
 function parseIntSafe(value: string | null, defaultValue: number): number {
   if (value === null || value === undefined || value === '') {
     return defaultValue;
@@ -173,6 +196,13 @@ function parseIntSafe(value: string | null, defaultValue: number): number {
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
+/**
+ * Safely parses a string as a floating-point number, returning a default value if parsing fails.
+ *
+ * @param value - The string to parse.
+ * @param defaultValue - The value to return if {@link value} is null, empty, or not a valid number.
+ * @returns The parsed floating-point number, or {@link defaultValue} if parsing is unsuccessful.
+ */
 function parseFloatSafe(value: string | null, defaultValue: number): number {
   if (value === null || value === undefined || value === '') {
     return defaultValue;

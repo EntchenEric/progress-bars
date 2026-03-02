@@ -10,49 +10,69 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
-  const color = searchParams.get('color') || '#3b82f6';
+  const color = searchParams.get('color') || '#2563eb';
   const colorGradient = searchParams.get('colorGradient');
-  const backgroundColor = searchParams.get('backgroundColor') || '#e5e7eb';
-  const progress = parseIntSafe(searchParams.get('progress'), 65);
-  const height = Math.min(500, Math.max(5, parseIntSafe(searchParams.get('height'), 24)));
-  const width = Math.min(3000, Math.max(10, parseIntSafe(searchParams.get('width'), 400)));
-  const borderRadius = Math.min(1000, Math.max(0, parseIntSafe(searchParams.get('borderRadius'), 12)));
+  const backgroundColor = searchParams.get('backgroundColor') || '#f3f4f6';
+  const progress = parseIntSafe(searchParams.get('progress'), 0);
+  const height = Math.min(500, Math.max(5, parseIntSafe(searchParams.get('height'), 5)));
+  const width = Math.min(3000, Math.max(10, parseIntSafe(searchParams.get('width'), 10)));
+  const borderRadius = Math.min(1000, Math.max(0, parseIntSafe(searchParams.get('borderRadius'), 10)));
   const striped = searchParams.get('striped') === 'true';
   const animated = searchParams.get('animated') === 'true';
+  const gradientAnimated = searchParams.get('gradientAnimated') === 'true';
   const animationSpeed = parseFloatSafe(searchParams.get('animationSpeed'), 0);
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
   const progressWidth = (clampedProgress / 100) * width;
   const safeAnimationSpeed = Math.max(animationSpeed, 0.1);
-  
+
   const animationDuration = Math.pow(1 / safeAnimationSpeed, 2);
   const animationDurationString = animationDuration.toFixed(2);
-  
+
   const stripeSize = Math.max(10, Math.min(40, 20 * safeAnimationSpeed));
 
   const initialAnimationSpeed = parseFloatSafe(searchParams.get('initialAnimationSpeed'), 1);
   const shouldAnimate = initialAnimationSpeed > 0;
   const initialAnimationDuration = (clampedProgress / 100) * (1 / initialAnimationSpeed);
-  
+
   const createGradientDef = () => {
+    let gradientInner = '';
     if (colorGradient) {
       const matches = colorGradient.match(/(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|rgba?\([^)]+\))/g) || [];
       if (matches.length >= 2) {
-        return `
-          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            ${matches.map((color, index) => 
-              `<stop offset="${(index * 100) / (matches.length - 1)}%" style="stop-color:${color}; stop-opacity:1" />`
-            ).join('\n')}
-          </linearGradient>
-        `;
+        gradientInner = matches.map((color, index) =>
+          `<stop offset="${(index * 100) / (matches.length - 1)}%" style="stop-color:${color}; stop-opacity:1" />`
+        ).join('\n');
       }
     }
-    return `
-      <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+
+    if (!gradientInner) {
+      gradientInner = `
         <stop offset="0%" style="stop-color:${color}; stop-opacity:1" />
         <stop offset="100%" style="stop-color:${adjustColor(color, 15)}; stop-opacity:1" />
+      `;
+    }
+
+    let defs = `
+      <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        ${gradientInner}
       </linearGradient>
     `;
+
+    return defs;
   };
+
+  // Create CSS compatible linear-gradient string for foreignObject
+  let cssGradient = '';
+  if (colorGradient) {
+    const matches = colorGradient.match(/(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|rgba?\([^)]+\))/g) || [];
+    if (matches.length >= 2) {
+      // We append the first color to the end so it loops seamlessly in CSS background panning
+      cssGradient = `linear-gradient(90deg, ${matches.join(', ')}, ${matches[0]})`;
+    }
+  }
+  if (!cssGradient) {
+    cssGradient = `linear-gradient(90deg, ${color}, ${adjustColor(color, 15)}, ${color})`;
+  }
 
   const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
@@ -60,8 +80,8 @@ export async function GET(request: NextRequest) {
       
       ${striped ? `
       <pattern id="stripePattern" patternUnits="userSpaceOnUse" width="${stripeSize}" height="${stripeSize}" patternTransform="rotate(45 0 0)">
-        <rect width="${stripeSize/2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0.15)" />
-        <rect x="${stripeSize/2}" width="${stripeSize/2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0)" />
+        <rect width="${stripeSize / 2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0.15)" />
+        <rect x="${stripeSize / 2}" width="${stripeSize / 2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0)" />
         ${animated ? `<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="${stripeSize} 0" dur="${animationDurationString}s" repeatCount="indefinite" additive="sum" />` : ''}
       </pattern>
       ` : ''}
@@ -70,8 +90,8 @@ export async function GET(request: NextRequest) {
         <rect
           width="${progressWidth}"
           height="${height}"
-          rx="${Math.min(borderRadius, height/2, progressWidth/2)}"
-          ry="${Math.min(borderRadius, height/2, progressWidth/2)}"
+          rx="${Math.min(borderRadius, height / 2, progressWidth / 2)}"
+          ry="${Math.min(borderRadius, height / 2, progressWidth / 2)}"
         />
       </clipPath>
       
@@ -83,12 +103,19 @@ export async function GET(request: NextRequest) {
     <rect
       width="${width}"
       height="${height}"
-      rx="${Math.min(borderRadius, height/2)}"
-      ry="${Math.min(borderRadius, height/2)}"
+      rx="${Math.min(borderRadius, height / 2)}"
+      ry="${Math.min(borderRadius, height / 2)}"
       fill="${backgroundColor}"
       filter="url(#shadow)"
     />
     <g clip-path="url(#progressClip)">
+      ${gradientAnimated ? `
+      <foreignObject width="${width}" height="${height}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%;">
+          <div class="css-animated-gradient ${animated && !striped ? 'pulse-animated' : ''} ${shouldAnimate ? 'initial-animation' : ''}" style="width: 100%; height: 100%; background: ${cssGradient};"></div>
+        </div>
+      </foreignObject>
+      ` : `
       <rect
         width="${width}"
         height="${height}"
@@ -96,6 +123,7 @@ export async function GET(request: NextRequest) {
         ${animated && !striped ? 'class="pulse-animated"' : ''}
         ${shouldAnimate ? 'class="initial-animation"' : ''}
       />
+      `}
       
       ${striped ? `
       <rect
@@ -122,6 +150,16 @@ export async function GET(request: NextRequest) {
       @keyframes progress-stripes {
         from { background-position: ${50 * safeAnimationSpeed}px 0; }
         to { background-position: 0 0; }
+      }
+
+      @keyframes css-gradient-pan {
+        0% { background-position: 0 0; }
+        100% { background-position: -${width}px 0; }
+      }
+      
+      .css-animated-gradient {
+        background-size: 100% 100% !important;
+        animation: css-gradient-pan ${parseFloat(animationDurationString) * 2}s linear infinite !important;
       }
       
       @keyframes initial-fill {
@@ -168,15 +206,15 @@ export async function GET(request: NextRequest) {
  */
 function adjustColor(color: string, amount: number): string {
   color = color.replace('#', '');
-  
+
   const r = parseInt(color.substring(0, 2), 16);
   const g = parseInt(color.substring(2, 4), 16);
   const b = parseInt(color.substring(4, 6), 16);
-  
+
   const newR = Math.min(255, Math.max(0, r + amount));
   const newG = Math.min(255, Math.max(0, g + amount));
   const newB = Math.min(255, Math.max(0, b + amount));
-  
+
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 }
 
@@ -191,7 +229,7 @@ function parseIntSafe(value: string | null, defaultValue: number): number {
   if (value === null || value === undefined || value === '') {
     return defaultValue;
   }
-  
+
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
 }
@@ -207,7 +245,7 @@ function parseFloatSafe(value: string | null, defaultValue: number): number {
   if (value === null || value === undefined || value === '') {
     return defaultValue;
   }
-  
+
   const parsed = parseFloat(value);
   return isNaN(parsed) ? defaultValue : parsed;
 } 

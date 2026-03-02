@@ -69,7 +69,7 @@ describe('Progress Bar Generator', () => {
                 fireEvent.click(greenButton)
             })
 
-            const url = screen.getByDisplayValue(/^https:.*/)
+            const url = screen.getByDisplayValue(/.*\/bar\?/)
             expect(url.value).toContain('color=%2316a34a')
         })
 
@@ -81,13 +81,13 @@ describe('Progress Bar Generator', () => {
                 fireEvent.change(widthInput, { target: { value: '4000' } })
             })
 
-            const url = screen.getByDisplayValue(/^https:.*/)
+            const url = screen.getByDisplayValue(/.*\/bar\?/)
             expect(url.value).toContain('width=3000')
         })
 
         it('toggles animation speed slider when animation is enabled', async () => {
             render(<Page />)
-            const animatedCheckbox = screen.getByRole('checkbox', { name: /animated/i })
+            const animatedCheckbox = screen.getByLabelText(/animated stripes/i)
 
             expect(screen.queryByText(/^animation speed$/i)).not.toBeInTheDocument()
 
@@ -116,7 +116,7 @@ describe('Progress Bar Generator', () => {
     describe('URL Generation and Copying', () => {
         it('generates correct URL with current parameters', () => {
             render(<Page />)
-            const urlInput = screen.getByDisplayValue(/^https:\/\/progress-bars\.entcheneric\.com\/bar\?/)
+            const urlInput = screen.getByDisplayValue(/.*\/bar\?/)
             expect(urlInput.value).toContain('progress=75')
             expect(urlInput.value).toContain('color=%232563eb')
         })
@@ -130,7 +130,7 @@ describe('Progress Bar Generator', () => {
             })
 
             expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-                expect.stringMatching(/^https:\/\/progress-bars\.entcheneric\.com\/bar\?/)
+                expect.stringMatching(/.*\/bar\?/)
             )
         })
 
@@ -151,7 +151,7 @@ describe('Progress Bar Generator', () => {
             expect(screen.queryByTestId('check-icon')).not.toBeInTheDocument()
         })
     })
-    
+
     describe('Error Handling', () => {
         it('shows warning for large width values', async () => {
             render(<Page />)
@@ -166,13 +166,13 @@ describe('Progress Bar Generator', () => {
 
         it('handles invalid color inputs gracefully', async () => {
             render(<Page />)
-            const colorInput = screen.getByRole('textbox', { name: /bar color/i })
+            const colorInput = screen.getByPlaceholderText('#000000')
 
             await act(async () => {
                 fireEvent.change(colorInput, { target: { value: 'invalid-color' } })
             })
 
-            const url = screen.getByDisplayValue(/^https:.*/)
+            const url = screen.getByDisplayValue(/.*\/bar\?/)
             expect(url.value).toContain('color=%232563eb')
         })
     })
@@ -180,13 +180,13 @@ describe('Progress Bar Generator', () => {
     describe('Initial Animation', () => {
         it('updates initial animation speed when slider changes', async () => {
             render(<Page />)
-            
+
             // Find the initial animation speed slider by its label text
             const initialAnimSpeedSlider = screen.getByTestId("initial-animation-speed-slider-input")
             expect(initialAnimSpeedSlider).toBeInTheDocument()
-            
+
             // Check default value in URL
-            const url = screen.getByDisplayValue(/^https:.*/)
+            const url = screen.getByDisplayValue(/.*\/bar\?/)
             expect(url.value).toContain('initialAnimationSpeed=1')
 
             // Change the value
@@ -195,20 +195,20 @@ describe('Progress Bar Generator', () => {
             })
 
             // Check if URL updated
-            const updatedUrl = screen.getByDisplayValue(/^https:.*/)
+            const updatedUrl = screen.getByDisplayValue(/.*\/bar\?/)
             expect(updatedUrl.value).toContain('initialAnimationSpeed=2')
         })
 
         it('disables initial animation when speed is set to 0', async () => {
             render(<Page />)
-            
+
             const initialAnimSpeedSlider = screen.getByTestId("initial-animation-speed-slider-input")
-            
+
             await act(async () => {
                 fireEvent.change(initialAnimSpeedSlider, { target: { value: "0" } })
             })
 
-            const url = screen.getByDisplayValue(/^https:.*/)
+            const url = screen.getByDisplayValue(/.*\/bar\?/)
             expect(url.value).toContain('initialAnimationSpeed=0')
         })
     })

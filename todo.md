@@ -1,4 +1,1 @@
-- rubberbanding 
-- shadcn/ui components
-- background color gradients
 - better cursor integration (cursor pointer and shit)

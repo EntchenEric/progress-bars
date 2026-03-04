@@ -95,7 +95,7 @@ describe('Progress Bar Generator', () => {
                 fireEvent.click(animatedCheckbox)
             })
 
-            expect(screen.getByText(/^animation speed$/i)).toBeInTheDocument()
+            expect(screen.getByText(/stripe animation speed/i)).toBeInTheDocument()
         })
     })
 
@@ -166,7 +166,8 @@ describe('Progress Bar Generator', () => {
 
         it('handles invalid color inputs gracefully', async () => {
             render(<Page />)
-            const colorInput = screen.getByPlaceholderText('#000000')
+            const colorInputs = screen.getAllByPlaceholderText('#000000')
+            const colorInput = colorInputs[0] // First one is Bar Color
 
             await act(async () => {
                 fireEvent.change(colorInput, { target: { value: 'invalid-color' } })

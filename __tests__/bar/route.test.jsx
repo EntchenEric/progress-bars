@@ -367,4 +367,20 @@ describe('GET /bar', () => {
     expect(content).toContain('offset="50%"');
     expect(content).toContain('offset="100%"');
   });
+
+  it('handles multi-color background gradients via backgroundGradient parameter', async () => {
+    const { GET } = require('../../app/bar/route');
+    const req = createMockRequest({
+      backgroundGradient: '#111111,#222222,#333333'
+    });
+    const res = await GET(req);
+    const content = await res.text();
+
+    expect(content).toContain('linearGradient id="backgroundGradient"');
+    expect(content).toContain('stop-color:#111111');
+    expect(content).toContain('stop-color:#222222');
+    expect(content).toContain('stop-color:#333333');
+    expect(content).toContain('fill="url(#backgroundGradient)"');
+    expect(content).toContain('stroke="#111111"');
+  });
 });

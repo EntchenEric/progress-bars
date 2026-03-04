@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
   const color = searchParams.get('color') || '#2563eb';
   const colorGradient = searchParams.get('colorGradient');
   const backgroundColor = searchParams.get('backgroundColor') || '#f3f4f6';
+  const backgroundGradient = searchParams.get('backgroundGradient');
   const progress = parseIntSafe(searchParams.get('progress'), 0);
   const height = Math.min(500, Math.max(5, parseIntSafe(searchParams.get('height'), 5)));
   const width = Math.min(3000, Math.max(10, parseIntSafe(searchParams.get('width'), 10)));
@@ -20,15 +21,23 @@ export async function GET(request: NextRequest) {
   const striped = searchParams.get('striped') === 'true';
   const animated = searchParams.get('animated') === 'true';
   const gradientAnimated = searchParams.get('gradientAnimated') === 'true';
-  const animationSpeed = parseFloatSafe(searchParams.get('animationSpeed'), 0);
+  const animationSpeed = parseFloatSafe(searchParams.get('animationSpeed'), 1);
+  const stripeAnimationSpeed = parseFloatSafe(searchParams.get('stripeAnimationSpeed'), animationSpeed);
+  const gradientAnimationSpeed = parseFloatSafe(searchParams.get('gradientAnimationSpeed'), animationSpeed);
+
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
   const progressWidth = (clampedProgress / 100) * width;
-  const safeAnimationSpeed = Math.max(animationSpeed, 0.1);
 
-  const animationDuration = Math.pow(1 / safeAnimationSpeed, 2);
-  const animationDurationString = animationDuration.toFixed(2);
+  const safeStripeAnimationSpeed = Math.max(stripeAnimationSpeed, 0.1);
+  const safeGradientAnimationSpeed = Math.max(gradientAnimationSpeed, 0.1);
 
-  const stripeSize = Math.max(10, Math.min(40, 20 * safeAnimationSpeed));
+  const stripeAnimationDuration = Math.pow(1 / safeStripeAnimationSpeed, 2);
+  const stripeAnimationDurationString = stripeAnimationDuration.toFixed(2);
+
+  const gradientAnimationDuration = Math.pow(1 / safeGradientAnimationSpeed, 2);
+  const gradientAnimationDurationString = gradientAnimationDuration.toFixed(2);
+
+  const stripeSize = Math.max(10, Math.min(40, 20 * safeStripeAnimationSpeed));
 
   const initialAnimationSpeed = parseFloatSafe(searchParams.get('initialAnimationSpeed'), 1);
   const shouldAnimate = initialAnimationSpeed > 0;
@@ -61,6 +70,26 @@ export async function GET(request: NextRequest) {
     return defs;
   };
 
+  const createBackgroundGradientDef = () => {
+    let gradientInner = '';
+    if (backgroundGradient) {
+      const matches = backgroundGradient.match(/(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|rgba?\([^)]+\))/g) || [];
+      if (matches.length >= 2) {
+        gradientInner = matches.map((color, index) =>
+          `<stop offset="${(index * 100) / (matches.length - 1)}%" style="stop-color:${color}; stop-opacity:1" />`
+        ).join('\n');
+      }
+    }
+
+    if (!gradientInner) return '';
+
+    return `
+      <linearGradient id="backgroundGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        ${gradientInner}
+      </linearGradient>
+    `;
+  };
+
   // Create CSS compatible linear-gradient string for foreignObject
   let cssGradient = '';
   if (colorGradient) {
@@ -82,7 +111,7 @@ export async function GET(request: NextRequest) {
       <pattern id="stripePattern" patternUnits="userSpaceOnUse" width="${stripeSize}" height="${stripeSize}" patternTransform="rotate(45 0 0)">
         <rect width="${stripeSize / 2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0.15)" />
         <rect x="${stripeSize / 2}" width="${stripeSize / 2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0)" />
-        ${animated ? `<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="${stripeSize} 0" dur="${animationDurationString}s" repeatCount="indefinite" additive="sum" />` : ''}
+        ${animated ? `<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="${stripeSize} 0" dur="${stripeAnimationDurationString}s" repeatCount="indefinite" additive="sum" />` : ''}
       </pattern>
       ` : ''}
       
@@ -98,6 +127,8 @@ export async function GET(request: NextRequest) {
       <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
         <feDropShadow dx="0" dy="1" stdDeviation="1" flood-opacity="0.2" />
       </filter>
+
+      ${createBackgroundGradientDef()}
     </defs>
     
     <rect
@@ -105,7 +136,7 @@ export async function GET(request: NextRequest) {
       height="${height}"
       rx="${Math.min(borderRadius, height / 2)}"
       ry="${Math.min(borderRadius, height / 2)}"
-      fill="${backgroundColor}"
+      fill="${backgroundGradient ? 'url(#backgroundGradient)' : backgroundColor}"
       filter="url(#shadow)"
     />
     <g clip-path="url(#progressClip)">
@@ -141,14 +172,14 @@ export async function GET(request: NextRequest) {
       rx="${borderRadius}"
       ry="${borderRadius}"
       fill="none"
-      stroke="${backgroundColor}"
+      stroke="${backgroundGradient ? (backgroundGradient.split(',')[0] || backgroundColor) : backgroundColor}"
       stroke-width="1"
       opacity="0.5"
     />
     
     <style>
       @keyframes progress-stripes {
-        from { background-position: ${50 * safeAnimationSpeed}px 0; }
+        from { background-position: ${50 * safeStripeAnimationSpeed}px 0; }
         to { background-position: 0 0; }
       }
 
@@ -159,7 +190,7 @@ export async function GET(request: NextRequest) {
       
       .css-animated-gradient {
         background-size: 100% 100% !important;
-        animation: css-gradient-pan ${parseFloat(animationDurationString) * 2}s linear infinite !important;
+        animation: css-gradient-pan ${parseFloat(gradientAnimationDurationString) * 2}s linear infinite !important;
       }
       
       @keyframes initial-fill {
@@ -172,11 +203,11 @@ export async function GET(request: NextRequest) {
       }
       
       .progress-animated {
-        animation: progress-stripes ${animationDurationString}s linear infinite;
+        animation: progress-stripes ${stripeAnimationDurationString}s linear infinite;
       }
       
       .pulse-animated {
-        animation: pulse ${(animationDuration * 1.2).toFixed(2)}s ease-in-out infinite;
+        animation: pulse ${(gradientAnimationDuration * 1.2).toFixed(2)}s ease-in-out infinite;
       }
       
       @keyframes pulse {

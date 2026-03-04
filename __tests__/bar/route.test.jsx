@@ -96,13 +96,13 @@ describe('GET /bar', () => {
     const reqOver = createMockRequest({ progress: '150' });
     const resOver = await GET(reqOver);
     const contentOver = await resOver.text();
-    
+
     expect(contentOver).toMatch(/width="[^"]*" height="[^"]*"/);
 
     const reqUnder = createMockRequest({ progress: '-50' });
     const resUnder = await GET(reqUnder);
     const contentUnder = await resUnder.text();
-    
+
     expect(contentUnder).toMatch(/width="0"/);
   });
 
@@ -115,7 +115,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toContain('<pattern id="stripePattern"');
     expect(content).toContain('<animateTransform');
     expect(content).toContain('dur="0.25s"');
@@ -130,7 +130,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toContain('width="3000"');
     expect(content).toContain('height="500"');
     expect(content).toContain('rx="1000"');
@@ -143,7 +143,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toContain('fill="#ff0000"');
   });
 
@@ -151,7 +151,7 @@ describe('GET /bar', () => {
     const { GET } = require('../../app/bar/route');
     const req = createMockRequest({});
     const res = await GET(req);
-    
+
     expect(res.headers.get('cache-control')).toBe('public, max-age=60');
   });
 
@@ -182,7 +182,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toMatch(/animation:[^}]*100\.00s/);
   });
 
@@ -194,7 +194,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toContain('stop-color:#ABC');
     expect(content).toContain('fill="#AABBCC"');
   });
@@ -207,7 +207,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="100"[^>]*>/);
   });
 
@@ -221,7 +221,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toMatch(/rx="10"/);
   });
 
@@ -232,7 +232,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toContain('stop-color:#808080');
     expect(content).toMatch(/stop-color:#[8-9][0-9a-f][8-9][0-9a-f][8-9][0-9a-f]/i);
   });
@@ -247,7 +247,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toContain('<pattern id="stripePattern"');
     expect(content).toContain('<animateTransform');
     expect(content).toMatch(/dur="0\.[0-9]+s"/);
@@ -259,7 +259,7 @@ describe('GET /bar', () => {
     const req = createMockRequest({});
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toContain('<defs>');
     expect(content).toContain('<linearGradient');
     expect(content).toContain('<filter id="shadow"');
@@ -282,7 +282,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toContain('stop-color:#2563eb');
     expect(content).toContain('fill="#f3f4f6"');
     expect(content).toMatch(/width="10"/);
@@ -297,7 +297,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toMatch(/width="10"/);
     expect(content).toMatch(/height="5"/);
 
@@ -311,7 +311,7 @@ describe('GET /bar', () => {
     });
     const res = await GET(req);
     const content = await res.text();
-    
+
     expect(content).toMatch(/width="10"/);
     expect(content).toMatch(/height="5"/);
 
@@ -320,7 +320,7 @@ describe('GET /bar', () => {
 
   it('calculates initial animation duration correctly', async () => {
     const { GET } = require('../../app/bar/route');
-    
+
     // Test with default speed (1)
     const reqDefault = createMockRequest({
       progress: '50'
@@ -350,5 +350,37 @@ describe('GET /bar', () => {
     const resNoAnim = await GET(reqNoAnim);
     const contentNoAnim = await resNoAnim.text();
     expect(contentNoAnim).not.toContain('class="initial-animation"');
+  });
+
+  it('handles multi-color gradients via colorGradient parameter', async () => {
+    const { GET } = require('../../app/bar/route');
+    const req = createMockRequest({
+      colorGradient: '#ff0000,#00ff00,#0000ff'
+    });
+    const res = await GET(req);
+    const content = await res.text();
+
+    expect(content).toContain('stop-color:#ff0000');
+    expect(content).toContain('stop-color:#00ff00');
+    expect(content).toContain('stop-color:#0000ff');
+    expect(content).toContain('offset="0%"');
+    expect(content).toContain('offset="50%"');
+    expect(content).toContain('offset="100%"');
+  });
+
+  it('handles multi-color background gradients via backgroundGradient parameter', async () => {
+    const { GET } = require('../../app/bar/route');
+    const req = createMockRequest({
+      backgroundGradient: '#111111,#222222,#333333'
+    });
+    const res = await GET(req);
+    const content = await res.text();
+
+    expect(content).toContain('linearGradient id="backgroundGradient"');
+    expect(content).toContain('stop-color:#111111');
+    expect(content).toContain('stop-color:#222222');
+    expect(content).toContain('stop-color:#333333');
+    expect(content).toContain('fill="url(#backgroundGradient)"');
+    expect(content).toContain('stroke="#111111"');
   });
 });

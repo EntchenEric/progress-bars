@@ -6,23 +6,31 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Copy, Check, Sun, Moon, Sparkles, Palette, Sliders, Code, Info, RotateCw, Eye } from 'lucide-react'
+import { Copy, Check, Sun, Moon, Sparkles, Palette, Sliders, Code, Info, RotateCw, Eye, Plus, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
+/**
+ * Renders the main Progress Bar Generator application UI.
+ *
+ * Provides an interactive interface for customizing, previewing, and integrating progress bars with real-time updates, theme and high contrast support, accessibility features, and copy-to-clipboard integration options.
+ */
 export default function Home() {
   const [params, setParams] = useState({
     progress: 75,
-    color: '#2563eb',
-    colorGradient: '',
+    colors: ['#2563eb'],
     backgroundColor: '#f3f4f6',
+    backgroundColors: ['#f3f4f6'],
     height: 20,
     width: 200,
     borderRadius: 10,
     striped: false,
     animated: false,
+    gradientAnimated: false,
     animationSpeed: 1,
+    stripeAnimationSpeed: 1,
+    gradientAnimationSpeed: 1,
     initialAnimationSpeed: 1,
   })
 
@@ -31,8 +39,10 @@ export default function Home() {
   const [highContrast, setHighContrast] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [ariaMessage, setAriaMessage] = useState('')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setTheme('dark')
     }
@@ -50,32 +60,91 @@ export default function Home() {
   const generateUrl = () => {
     const safeValues = {
       progress: Math.max(0, Math.min(isNaN(params.progress) ? 0 : params.progress, 100)),
-      color: params.color || '#2563eb',
-      backgroundColor: params.backgroundColor || '#f3f4f6',
+      backgroundColor: params.backgroundColors[0] || '#f3f4f6',
       height: Math.min(500, Math.max(5, isNaN(params.height) ? 5 : params.height)),
       width: Math.min(3000, Math.max(10, isNaN(params.width) ? 10 : params.width)),
       borderRadius: Math.min(1000, Math.max(0, isNaN(params.borderRadius) ? 0 : params.borderRadius)),
       striped: Boolean(params.striped),
       animated: Boolean(params.animated),
+      gradientAnimated: Boolean(params.gradientAnimated),
       animationSpeed: isNaN(params.animationSpeed) ? 0 : Math.max(0, params.animationSpeed),
+      stripeAnimationSpeed: isNaN(params.stripeAnimationSpeed) ? 1 : Math.max(0, params.stripeAnimationSpeed),
+      gradientAnimationSpeed: isNaN(params.gradientAnimationSpeed) ? 1 : Math.max(0, params.gradientAnimationSpeed),
       initialAnimationSpeed: isNaN(params.initialAnimationSpeed) ? 0 : Math.max(0, params.initialAnimationSpeed),
-      colorGradient: params.colorGradient || undefined,
     };
 
-    const baseUrl = 'https://progress-bars.entcheneric.com/bar'
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://progress-bars.entcheneric.com';
+    const baseUrl = `${origin}/bar`;
     const queryParams = new URLSearchParams({
       progress: safeValues.progress.toString(),
-      color: safeValues.color,
       backgroundColor: safeValues.backgroundColor,
       height: safeValues.height.toString(),
       width: safeValues.width.toString(),
       borderRadius: safeValues.borderRadius.toString(),
       striped: safeValues.striped.toString(),
       animated: safeValues.animated.toString(),
+      gradientAnimated: safeValues.gradientAnimated.toString(),
       animationSpeed: safeValues.animationSpeed.toString(),
+      stripeAnimationSpeed: safeValues.stripeAnimationSpeed.toString(),
+      gradientAnimationSpeed: safeValues.gradientAnimationSpeed.toString(),
       initialAnimationSpeed: safeValues.initialAnimationSpeed.toString(),
-      ...(safeValues.colorGradient && { colorGradient: safeValues.colorGradient }),
     })
+
+    if (params.colors.length > 1) {
+      queryParams.set('colorGradient', params.colors.join(','));
+    } else {
+      queryParams.set('color', params.colors[0] || '#2563eb');
+    }
+
+    if (params.backgroundColors.length > 1) {
+      queryParams.set('backgroundGradient', params.backgroundColors.join(','));
+    }
+
+    return `${baseUrl}?${queryParams.toString()}`
+  }
+
+  const generateServerUrl = () => {
+    const safeValues = {
+      progress: Math.max(0, Math.min(isNaN(params.progress) ? 0 : params.progress, 100)),
+      backgroundColor: params.backgroundColors[0] || '#f3f4f6',
+      height: Math.min(500, Math.max(5, isNaN(params.height) ? 5 : params.height)),
+      width: Math.min(3000, Math.max(10, isNaN(params.width) ? 10 : params.width)),
+      borderRadius: Math.min(1000, Math.max(0, isNaN(params.borderRadius) ? 0 : params.borderRadius)),
+      striped: Boolean(params.striped),
+      animated: Boolean(params.animated),
+      gradientAnimated: Boolean(params.gradientAnimated),
+      animationSpeed: isNaN(params.animationSpeed) ? 0 : Math.max(0, params.animationSpeed),
+      stripeAnimationSpeed: isNaN(params.stripeAnimationSpeed) ? 1 : Math.max(0, params.stripeAnimationSpeed),
+      gradientAnimationSpeed: isNaN(params.gradientAnimationSpeed) ? 1 : Math.max(0, params.gradientAnimationSpeed),
+      initialAnimationSpeed: isNaN(params.initialAnimationSpeed) ? 0 : Math.max(0, params.initialAnimationSpeed),
+    };
+
+    const baseUrl = 'https://progress-bars.entcheneric.com/bar';
+    const queryParams = new URLSearchParams({
+      progress: safeValues.progress.toString(),
+      backgroundColor: safeValues.backgroundColor,
+      height: safeValues.height.toString(),
+      width: safeValues.width.toString(),
+      borderRadius: safeValues.borderRadius.toString(),
+      striped: safeValues.striped.toString(),
+      animated: safeValues.animated.toString(),
+      gradientAnimated: safeValues.gradientAnimated.toString(),
+      animationSpeed: safeValues.animationSpeed.toString(),
+      stripeAnimationSpeed: safeValues.stripeAnimationSpeed.toString(),
+      gradientAnimationSpeed: safeValues.gradientAnimationSpeed.toString(),
+      initialAnimationSpeed: safeValues.initialAnimationSpeed.toString(),
+    })
+
+    if (params.colors.length > 1) {
+      queryParams.set('colorGradient', params.colors.join(','));
+    } else {
+      queryParams.set('color', params.colors[0] || '#2563eb');
+    }
+
+    if (params.backgroundColors.length > 1) {
+      queryParams.set('backgroundGradient', params.backgroundColors.join(','));
+    }
+
     return `${baseUrl}?${queryParams.toString()}`
   }
 
@@ -123,37 +192,43 @@ export default function Home() {
   }
 
   const presetColors = [
-    { name: 'Blue', color: '#2563eb' },
-    { name: 'Green', color: '#16a34a' },
-    { name: 'Purple', color: '#9333ea' },
-    { name: 'Red', color: '#dc2626' },
-    { name: 'Orange', color: '#ea580c' },
-    { name: 'Pink', color: '#db2777' },
+    { name: 'Blue', colors: ['#2563eb'] },
+    { name: 'Green', colors: ['#16a34a'] },
+    { name: 'Purple', colors: ['#9333ea'] },
+    { name: 'Red', colors: ['#dc2626'] },
+    { name: 'Orange', colors: ['#ea580c'] },
+    { name: 'Pink', colors: ['#db2777'] },
   ]
 
   const presetGradients = [
-    { 
-      name: 'Ocean Breeze', 
+    {
+      name: 'Ocean Breeze',
+      colors: ['#0ea5e9', '#2563eb', '#4f46e5'],
       gradient: 'linear-gradient(90deg, #0ea5e9, #2563eb, #4f46e5)'
     },
-    { 
-      name: 'Sunset Vibes', 
+    {
+      name: 'Sunset Vibes',
+      colors: ['#f97316', '#db2777', '#7c3aed'],
       gradient: 'linear-gradient(90deg, #f97316, #db2777, #7c3aed)'
     },
-    { 
-      name: 'Forest Magic', 
+    {
+      name: 'Forest Magic',
+      colors: ['#059669', '#16a34a', '#65a30d'],
       gradient: 'linear-gradient(90deg, #059669, #16a34a, #65a30d)'
     },
-    { 
-      name: 'Cherry Blossom', 
+    {
+      name: 'Cherry Blossom',
+      colors: ['#ec4899', '#d946ef', '#a855f7'],
       gradient: 'linear-gradient(90deg, #ec4899, #d946ef, #a855f7)'
     },
-    { 
-      name: 'Golden Hour', 
+    {
+      name: 'Golden Hour',
+      colors: ['#f59e0b', '#ea580c', '#dc2626'],
       gradient: 'linear-gradient(90deg, #f59e0b, #ea580c, #dc2626)'
     },
-    { 
-      name: 'Northern Lights', 
+    {
+      name: 'Northern Lights',
+      colors: ['#06b6d4', '#6366f1', '#a855f7'],
       gradient: 'linear-gradient(90deg, #06b6d4, #6366f1, #a855f7)'
     }
   ]
@@ -343,10 +418,12 @@ export default function Home() {
                   <div className="flex justify-between items-center">
                     <Label
                       htmlFor="progress"
-                      className={getThemeClasses({
-                        light: "text-gray-700",
-                        dark: "text-gray-200"
-                      })}
+                      className={cn(
+                        getThemeClasses({
+                          light: "text-gray-700",
+                          dark: "text-gray-200"
+                        })
+                      )}
                     >
                       Progress
                     </Label>
@@ -404,11 +481,12 @@ export default function Home() {
                         )}
                         onClick={() => setParams({
                           ...params,
-                          color: preset.color
+                          colors: [...preset.colors],
+                          gradientAnimated: preset.colors.length > 1 && params.gradientAnimated
                         })}
                       >
                         <div className="w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                          <div className="h-full rounded-full" style={{ width: '70%', backgroundColor: preset.color }}></div>
+                          <div className="h-full rounded-full" style={{ width: '70%', backgroundColor: preset.colors[0] }}></div>
                         </div>
                         <span className={cn(
                           "text-xs font-medium",
@@ -424,114 +502,226 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div>
-                  <Label
-                    htmlFor="color"
-                    className={getThemeClasses({
-                      light: "text-gray-700",
-                      dark: "text-gray-200"
-                    })}
-                  >
-                    Bar Color
-                  </Label>
-                  <div className="flex gap-2 mt-1">
-                    <div
-                      className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
-                      style={{
-                        borderColor: getThemeClasses({
-                          light: "#e2e8f0",
-                          dark: "#4b5563"
-                        })
-                      }}
-                      onClick={() => document.getElementById('colorPicker')?.click()}
-                    >
-                      <div className="absolute inset-0" style={{ backgroundColor: params.color }}></div>
-                      <Input
-                        id="colorPicker"
-                        type="color"
-                        value={params.color}
-                        onChange={(e) => {
-                          const newColor = e.target.value;
-                          const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
-                          setParams({
-                            ...params,
-                            color: isValidHex ? newColor : '#2563eb'
-                          });
-                        }}
-                        className="absolute opacity-0 cursor-pointer w-full h-full"
-                        aria-label="Select color"
-                      />
+                <div className="space-y-4 pt-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Palette className="h-4 w-4 text-blue-500" />
+                      <Label
+                        className={getThemeClasses({
+                          light: "text-gray-700 font-semibold",
+                          dark: "text-gray-200 font-semibold"
+                        })}
+                      >
+                        Bar Colors
+                      </Label>
                     </div>
-                    <Input
-                      type="text"
-                      value={params.color}
-                      onChange={(e) => {
-                        const newColor = e.target.value;
-                        const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
-                        setParams({
-                          ...params,
-                          color: isValidHex ? newColor : '#2563eb'
-                        });
-                      }}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setParams({
+                        ...params,
+                        colors: [...params.colors, '#3b82f6']
+                      })}
                       className={cn(
-                        "flex-1",
+                        "h-8 px-3 text-xs font-semibold gap-1.5 transition-all hover:shadow-md",
                         getThemeClasses({
-                          light: "bg-white",
-                          dark: "bg-gray-800 border-gray-700 text-gray-200",
-                          lightHighContrast: "bg-white border-2 border-black text-black",
-                          darkHighContrast: "bg-black border-2 border-white text-white"
+                          light: "bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200",
+                          dark: "bg-blue-900/30 text-blue-300 hover:bg-blue-900/50 border-blue-800"
                         })
                       )}
-                      aria-label="Bar color"
-                    />
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add Color
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                    {params.colors.map((color, index) => (
+                      <div key={index} className="flex gap-2 items-center">
+                        <div
+                          className="w-10 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center flex-shrink-0"
+                          style={{
+                            borderColor: getThemeClasses({
+                              light: "#e2e8f0",
+                              dark: "#4b5563"
+                            })
+                          }}
+                          onClick={() => document.getElementById(`colorPicker-${index}`)?.click()}
+                        >
+                          <div className="absolute inset-0" style={{ backgroundColor: color }}></div>
+                          <input
+                            id={`colorPicker-${index}`}
+                            type="color"
+                            value={color}
+                            onChange={(e) => {
+                              const newColors = [...params.colors];
+                              newColors[index] = e.target.value;
+                              setParams({ ...params, colors: newColors });
+                            }}
+                            className="absolute opacity-0 cursor-pointer w-full h-full"
+                            aria-label={`Select color ${index + 1}`}
+                          />
+                        </div>
+                        <Input
+                          type="text"
+                          aria-label={`Bar color ${index + 1}`}
+                          value={color}
+                          onChange={(e) => {
+                            const newColors = [...params.colors];
+                            newColors[index] = e.target.value;
+                            setParams({ ...params, colors: newColors });
+                          }}
+                          onBlur={(e) => {
+                            const newColor = e.target.value;
+                            const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
+                            if (!isValidHex) {
+                              const newColors = [...params.colors];
+                              newColors[index] = '#2563eb';
+                              setParams({ ...params, colors: newColors });
+                            }
+                          }}
+                          className={cn(
+                            "flex-1 h-8 text-xs font-mono",
+                            getThemeClasses({
+                              light: "bg-white border-gray-200 text-gray-700",
+                              dark: "bg-gray-800 border-gray-700 text-gray-200",
+                              lightHighContrast: "bg-white border-2 border-black text-black",
+                              darkHighContrast: "bg-black border-2 border-white text-white"
+                            })
+                          )}
+                          placeholder="#000000"
+                        />
+                        {params.colors.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const newColors = params.colors.filter((_, i) => i !== index);
+                              setParams({
+                                ...params,
+                                colors: newColors,
+                                gradientAnimated: newColors.length > 1 ? params.gradientAnimated : false
+                              });
+                            }}
+                            className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                            aria-label={`Remove color ${index + 1}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div>
-                  <Label
-                    htmlFor="backgroundColor"
-                    className={getThemeClasses({
-                      light: "text-gray-700",
-                      dark: "text-gray-200"
-                    })}
-                  >
-                    Background Color
-                  </Label>
-                  <div className="flex gap-2 mt-1">
-                    <div
-                      className="w-12 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center"
-                      style={{
-                        borderColor: getThemeClasses({
-                          light: "#e2e8f0",
-                          dark: "#4b5563"
-                        })
-                      }}
-                      onClick={() => document.getElementById('backgroundColorPicker')?.click()}
-                    >
-                      <div className="absolute inset-0" style={{ backgroundColor: params.backgroundColor }}></div>
-                      <Input
-                        id="backgroundColorPicker"
-                        type="color"
-                        value={params.backgroundColor}
-                        onChange={(e) => setParams({ ...params, backgroundColor: e.target.value })}
-                        className="absolute opacity-0 cursor-pointer w-full h-full"
-                        aria-label="Select background color"
-                      />
+                <div className="space-y-4 pt-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Palette className="h-4 w-4 text-blue-500" />
+                      <Label
+                        className={getThemeClasses({
+                          light: "text-gray-700 font-semibold",
+                          dark: "text-gray-200 font-semibold"
+                        })}
+                      >
+                        Background Colors
+                      </Label>
                     </div>
-                    <Input
-                      type="text"
-                      value={params.backgroundColor}
-                      onChange={(e) => setParams({ ...params, backgroundColor: e.target.value })}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setParams({
+                        ...params,
+                        backgroundColors: [...params.backgroundColors, '#f3f4f6']
+                      })}
                       className={cn(
-                        "flex-1",
+                        "h-8 px-3 text-xs font-semibold gap-1.5 transition-all hover:shadow-md",
                         getThemeClasses({
-                          light: "bg-white",
-                          dark: "bg-gray-800 border-gray-700 text-gray-200",
-                          lightHighContrast: "bg-white border-2 border-black text-black",
-                          darkHighContrast: "bg-black border-2 border-white text-white"
+                          light: "bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200",
+                          dark: "bg-blue-900/30 text-blue-300 hover:bg-blue-900/50 border-blue-800"
                         })
                       )}
-                    />
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add Background Color
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                    {params.backgroundColors.map((color, index) => (
+                      <div key={index} className="flex gap-2 items-center">
+                        <div
+                          className="w-10 h-8 rounded border cursor-pointer overflow-hidden relative flex items-center justify-center flex-shrink-0"
+                          style={{
+                            borderColor: getThemeClasses({
+                              light: "#e2e8f0",
+                              dark: "#4b5563"
+                            })
+                          }}
+                          onClick={() => document.getElementById(`bgColorPicker-${index}`)?.click()}
+                        >
+                          <div className="absolute inset-0" style={{ backgroundColor: color }}></div>
+                          <input
+                            id={`bgColorPicker-${index}`}
+                            type="color"
+                            value={color}
+                            onChange={(e) => {
+                              const newColors = [...params.backgroundColors];
+                              newColors[index] = e.target.value;
+                              setParams({ ...params, backgroundColors: newColors });
+                            }}
+                            className="absolute opacity-0 cursor-pointer w-full h-full"
+                            aria-label={`Select background color ${index + 1}`}
+                          />
+                        </div>
+                        <Input
+                          type="text"
+                          aria-label={`Background color ${index + 1}`}
+                          value={color}
+                          onChange={(e) => {
+                            const newColors = [...params.backgroundColors];
+                            newColors[index] = e.target.value;
+                            setParams({ ...params, backgroundColors: newColors });
+                          }}
+                          onBlur={(e) => {
+                            const newColor = e.target.value;
+                            const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
+                            if (!isValidHex) {
+                              const newColors = [...params.backgroundColors];
+                              newColors[index] = '#f3f4f6';
+                              setParams({ ...params, backgroundColors: newColors });
+                            }
+                          }}
+                          className={cn(
+                            "flex-1 h-8 text-xs font-mono",
+                            getThemeClasses({
+                              light: "bg-white border-gray-200 text-gray-700",
+                              dark: "bg-gray-800 border-gray-700 text-gray-200",
+                              lightHighContrast: "bg-white border-2 border-black text-black",
+                              darkHighContrast: "bg-black border-2 border-white text-white"
+                            })
+                          )}
+                          placeholder="#000000"
+                        />
+                        {params.backgroundColors.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const newColors = params.backgroundColors.filter((_, i) => i !== index);
+                              setParams({
+                                ...params,
+                                backgroundColors: newColors
+                              });
+                            }}
+                            className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                            aria-label={`Remove background color ${index + 1}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -558,13 +748,13 @@ export default function Home() {
                         )}
                         onClick={() => setParams({
                           ...params,
-                          colorGradient: preset.gradient,
-                          color: ''
+                          colors: [...preset.colors],
+                          gradientAnimated: params.gradientAnimated
                         })}
                       >
-                        <div 
-                          className="w-full h-3 rounded-full" 
-                          style={{ 
+                        <div
+                          className="w-full h-3 rounded-full"
+                          style={{
                             background: preset.gradient,
                             border: getThemeClasses({
                               light: "1px solid rgba(0,0,0,0.1)",
@@ -586,45 +776,16 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div>
-                  <Label
-                    htmlFor="gradient"
-                    className={getThemeClasses({
-                      light: "text-gray-700",
-                      dark: "text-gray-200"
-                    })}
-                  >
-                    Custom Gradient
-                  </Label>
-                  <Input
-                    id="gradient"
-                    type="text"
-                    value={params.colorGradient}
-                    onChange={(e) => setParams({ 
-                      ...params, 
-                      colorGradient: e.target.value,
-                      color: e.target.value ? '' : params.color
-                    })}
-                    placeholder="linear-gradient(90deg, #color1, #color2)"
-                    className={cn(
-                      getThemeClasses({
-                        light: "bg-white",
-                        dark: "bg-gray-800 border-gray-700 text-gray-200",
-                        lightHighContrast: "bg-white border-2 border-black text-black",
-                        darkHighContrast: "bg-black border-2 border-white text-white"
-                      })
-                    )}
-                  />
-                </div>
-
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label
                       htmlFor="height"
-                      className={getThemeClasses({
-                        light: "text-gray-700",
-                        dark: "text-gray-200"
-                      })}
+                      className={cn(
+                        getThemeClasses({
+                          light: "text-gray-700",
+                          dark: "text-gray-200"
+                        })
+                      )}
                     >
                       Height (px)
                     </Label>
@@ -661,10 +822,12 @@ export default function Home() {
                   <div>
                     <Label
                       htmlFor="width"
-                      className={getThemeClasses({
-                        light: "text-gray-700",
-                        dark: "text-gray-200"
-                      })}
+                      className={cn(
+                        getThemeClasses({
+                          light: "text-gray-700",
+                          dark: "text-gray-200"
+                        })
+                      )}
                     >
                       Width (px)
                     </Label>
@@ -716,10 +879,12 @@ export default function Home() {
                   <div>
                     <Label
                       htmlFor="borderRadius"
-                      className={getThemeClasses({
-                        light: "text-gray-700",
-                        dark: "text-gray-200"
-                      })}
+                      className={cn(
+                        getThemeClasses({
+                          light: "text-gray-700",
+                          dark: "text-gray-200"
+                        })
+                      )}
                     >
                       Radius (px)
                     </Label>
@@ -760,10 +925,12 @@ export default function Home() {
                     <div className="flex items-center gap-1.5">
                       <Label
                         htmlFor="initialAnimationSpeed"
-                        className={getThemeClasses({
-                          light: "text-gray-700",
-                          dark: "text-gray-200"
-                        })}
+                        className={cn(
+                          getThemeClasses({
+                            light: "text-gray-700",
+                            dark: "text-gray-200"
+                          })
+                        )}
                       >
                         Initial Animation Speed
                       </Label>
@@ -877,10 +1044,12 @@ export default function Home() {
                       </div>
                       <Label
                         htmlFor="striped"
-                        className={getThemeClasses({
-                          light: "text-gray-700",
-                          dark: "text-gray-200"
-                        })}
+                        className={cn(
+                          getThemeClasses({
+                            light: "text-gray-700",
+                            dark: "text-gray-200"
+                          })
+                        )}
                       >
                         Striped
                       </Label>
@@ -929,12 +1098,67 @@ export default function Home() {
                       </div>
                       <Label
                         htmlFor="animated"
-                        className={getThemeClasses({
-                          light: "text-gray-700",
-                          dark: "text-gray-200"
-                        })}
+                        className={cn(
+                          getThemeClasses({
+                            light: "text-gray-700",
+                            dark: "text-gray-200"
+                          })
+                        )}
                       >
-                        Animated
+                        Animated Stripes
+                      </Label>
+                    </div>
+                    <div className={cn("flex items-center space-x-2 transition-opacity", params.colors.length <= 1 ? "opacity-50 pointer-events-none" : "")}>
+                      <div className="relative flex items-center">
+                        <input
+                          type="checkbox"
+                          id="gradientAnimated"
+                          checked={params.gradientAnimated}
+                          disabled={params.colors.length <= 1}
+                          onChange={(e) => {
+                            setParams({
+                              ...params,
+                              gradientAnimated: e.target.checked
+                            });
+                          }}
+                          className={cn(
+                            "peer h-5 w-5 cursor-pointer appearance-none rounded-md border transition-colors",
+                            "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                            getThemeClasses({
+                              light: "border-gray-300 focus:ring-blue-400 focus:ring-offset-white",
+                              dark: "border-gray-600 bg-gray-700 focus:ring-blue-500 focus:ring-offset-gray-800"
+                            })
+                          )}
+                        />
+                        <svg
+                          className={cn(
+                            "pointer-events-none absolute left-0.5 top-0.5 h-4 w-4 opacity-0 peer-checked:opacity-100 transition-opacity",
+                            getThemeClasses({
+                              light: "text-blue-600",
+                              dark: "text-blue-400"
+                            })
+                          )}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <Label
+                        htmlFor="gradientAnimated"
+                        className={cn(
+                          getThemeClasses({
+                            light: "text-gray-700",
+                            dark: "text-gray-200"
+                          })
+                        )}
+                      >
+                        Animated Gradient
                       </Label>
                     </div>
                   </div>
@@ -943,13 +1167,15 @@ export default function Home() {
                     <div className="mt-4 space-y-2">
                       <div className="flex justify-between items-center">
                         <Label
-                          htmlFor="animationSpeed"
-                          className={getThemeClasses({
-                            light: "text-gray-700",
-                            dark: "text-gray-200"
-                          })}
+                          htmlFor="stripeAnimationSpeed"
+                          className={cn(
+                            getThemeClasses({
+                              light: "text-gray-700",
+                              dark: "text-gray-200"
+                            })
+                          )}
                         >
-                          Animation Speed
+                          Stripe Animation Speed
                         </Label>
                         <span className={cn(
                           "text-sm font-medium px-2 py-1 rounded-md",
@@ -959,17 +1185,17 @@ export default function Home() {
                             lightHighContrast: "text-black",
                             darkHighContrast: "text-white"
                           })
-                        )} aria-label="animationSpeed-value">
-                          {params.animationSpeed.toFixed(1)}x
+                        )} aria-label="stripeAnimationSpeed-value">
+                          {params.stripeAnimationSpeed.toFixed(1)}x
                         </span>
                       </div>
                       <Slider
-                        id="animationSpeed"
+                        id="stripeAnimationSpeed"
                         min={0.1}
                         max={5}
                         step={0.1}
-                        value={[params.animationSpeed]}
-                        onValueChange={(value) => setParams({ ...params, animationSpeed: value[0] })}
+                        value={[params.stripeAnimationSpeed]}
+                        onValueChange={(value) => setParams({ ...params, stripeAnimationSpeed: value[0] })}
                         className={cn(
                           "mt-2",
                           getThemeClasses({
@@ -977,18 +1203,66 @@ export default function Home() {
                             dark: "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
                           })
                         )}
-                        aria-label="animation speed"
+                        aria-label="stripe animation speed"
                       />
-                      <div className="flex justify-between text-xs">
-                        <span className={getThemeClasses({
-                          light: "text-gray-500",
-                          dark: "text-gray-400"
-                        })}>Slower</span>
-                        <span className={getThemeClasses({
-                          light: "text-gray-500",
-                          dark: "text-gray-400"
-                        })}>Faster</span>
+                    </div>
+                  )}
+
+                  {params.gradientAnimated && (
+                    <div className="mt-4 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label
+                          htmlFor="gradientAnimationSpeed"
+                          className={cn(
+                            getThemeClasses({
+                              light: "text-gray-700",
+                              dark: "text-gray-200"
+                            })
+                          )}
+                        >
+                          Gradient Animation Speed
+                        </Label>
+                        <span className={cn(
+                          "text-sm font-medium px-2 py-1 rounded-md",
+                          getThemeClasses({
+                            light: "bg-blue-100 text-blue-700",
+                            dark: "bg-blue-900/30 text-blue-300",
+                            lightHighContrast: "text-black",
+                            darkHighContrast: "text-white"
+                          })
+                        )} aria-label="gradientAnimationSpeed-value">
+                          {params.gradientAnimationSpeed.toFixed(1)}x
+                        </span>
                       </div>
+                      <Slider
+                        id="gradientAnimationSpeed"
+                        min={0.1}
+                        max={5}
+                        step={0.1}
+                        value={[params.gradientAnimationSpeed]}
+                        onValueChange={(value) => setParams({ ...params, gradientAnimationSpeed: value[0] })}
+                        className={cn(
+                          "mt-2",
+                          getThemeClasses({
+                            light: "[&_[role=slider]]:bg-blue-500 [&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-md",
+                            dark: "[&_[role=slider]]:bg-blue-400 [&_[role=slider]]:border-blue-400 [&_[role=slider]]:shadow-md"
+                          })
+                        )}
+                        aria-label="gradient animation speed"
+                      />
+                    </div>
+                  )}
+
+                  {(params.animated || params.gradientAnimated) && (
+                    <div className="flex justify-between text-xs mt-2">
+                      <span className={getThemeClasses({
+                        light: "text-gray-500",
+                        dark: "text-gray-400"
+                      })}>Slower</span>
+                      <span className={getThemeClasses({
+                        light: "text-gray-500",
+                        dark: "text-gray-400"
+                      })}>Faster</span>
                     </div>
                   )}
                 </div>
@@ -1062,7 +1336,7 @@ export default function Home() {
                         justifyContent: 'center'
                       }}>
                         <img
-                          src={generateUrl()}
+                          src={mounted ? generateUrl() : generateServerUrl()}
                           width={params.width}
                           height={params.height}
                           style={{
@@ -1081,7 +1355,7 @@ export default function Home() {
                       </div>
                     </div>
                     {params.width > 500 && (
-                      <div 
+                      <div
                         className={cn(
                           "py-2 px-4 text-xs text-center border-t",
                           getThemeClasses({
@@ -1189,6 +1463,7 @@ export default function Home() {
                       <div className="relative">
                         <Input
                           value={generateUrl()}
+                          aria-label="Progress Bar URL"
                           readOnly
                           className={cn(
                             "pr-10",
@@ -1261,6 +1536,7 @@ export default function Home() {
                       <div className="relative">
                         <Input
                           value={`<img src="${generateUrl()}" alt="Progress Bar">`}
+                          aria-label="HTML Embed Code"
                           readOnly
                           className={cn(
                             "pr-10",
@@ -1372,7 +1648,7 @@ export default function Home() {
                       dark: "bg-blue-400"
                     })
                   )}></div>
-                  <span><strong>Color</strong> - The color of the progress bar</span>
+                  <span><strong>Colors</strong> - The colors of the progress bar (add multiple for a gradient)</span>
                 </div>
 
                 <div className="flex items-start gap-2">

@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         source: '/bar.svg',
         destination: '/bar?_format=svg',
       },
+      {
+        source: '/bar.png',
+        destination: '/bar?_format=png',
+      },
     ]
   },
 };

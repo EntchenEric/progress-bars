@@ -32,6 +32,7 @@ export default function Home() {
     stripeAnimationSpeed: 1,
     gradientAnimationSpeed: 1,
     initialAnimationSpeed: 1,
+    format: 'svg' as 'png' | 'svg',
   })
 
   const [copied, setCopied] = useState<string | null>(null)
@@ -74,7 +75,7 @@ export default function Home() {
     };
 
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://progress-bars.entcheneric.com';
-    const baseUrl = `${origin}/bar`;
+    const baseUrl = `${origin}/bar.${params.format}`;
     const queryParams = new URLSearchParams({
       progress: safeValues.progress.toString(),
       backgroundColor: safeValues.backgroundColor,
@@ -119,7 +120,7 @@ export default function Home() {
       initialAnimationSpeed: isNaN(params.initialAnimationSpeed) ? 0 : Math.max(0, params.initialAnimationSpeed),
     };
 
-    const baseUrl = 'https://progress-bars.entcheneric.com/bar';
+    const baseUrl = `https://progress-bars.entcheneric.com/bar.${params.format}`;
     const queryParams = new URLSearchParams({
       progress: safeValues.progress.toString(),
       backgroundColor: safeValues.backgroundColor,
@@ -920,7 +921,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className={cn("space-y-3", params.format === 'png' ? "opacity-40 pointer-events-none" : "")}>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1.5">
                       <Label
@@ -958,7 +959,7 @@ export default function Home() {
                             })
                           )}
                         >
-                          When set to 0, the progress bar will appear instantly without any initial animation. Higher values will make the progress bar animate from 0% to the target progress value. more = faster
+                          When set to 0, the progress bar will appear instantly without any initial animation. Higher values will make the progress bar animate from 0% to the target progress value. more = faster. {params.format === 'png' ? "Not available in PNG format." : ""}
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -982,6 +983,7 @@ export default function Home() {
                     step={0.1}
                     value={[params.initialAnimationSpeed]}
                     onValueChange={(value: number[]) => setParams({ ...params, initialAnimationSpeed: value[0] })}
+                    disabled={params.format === 'png'}
                     className={cn(
                       "mt-2",
                       getThemeClasses({
@@ -991,6 +993,86 @@ export default function Home() {
                     )}
                     aria-label="initial animation speed"
                   />
+                </div>
+
+                <div className="space-y-3 mt-4">
+                  <div className="flex items-center gap-1.5">
+                    <Label
+                      className={getThemeClasses({
+                        light: "text-gray-700",
+                        dark: "text-gray-200"
+                      })}
+                    >
+                      Output Format
+                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className={cn(
+                            "h-4 w-4 p-0 hover:bg-transparent",
+                            getThemeClasses({
+                              light: "text-gray-400 hover:text-gray-600",
+                              dark: "text-gray-500 hover:text-gray-400"
+                            })
+                          )}
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        className={cn(
+                          "text-sm p-3 w-64",
+                          getThemeClasses({
+                            light: "bg-white text-gray-700",
+                            dark: "bg-gray-800 text-gray-200 border-gray-700"
+                          })
+                        )}
+                      >
+                        PNG is best for sharing on platforms like Discord or Slack as they will correctly display it as an image. SVG supports animations but may not preview on all platforms.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={params.format === 'png' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setParams({ ...params, format: 'png' })}
+                      className={cn(
+                        "flex-1 h-9 font-medium",
+                        params.format === 'png'
+                          ? getThemeClasses({
+                            light: "bg-blue-100 text-blue-700 hover:bg-blue-200",
+                            dark: "bg-blue-900/40 text-blue-300 hover:bg-blue-900/60"
+                          })
+                          : getThemeClasses({
+                            light: "text-gray-600 hover:bg-gray-100",
+                            dark: "text-gray-400 hover:bg-gray-700"
+                          })
+                      )}
+                    >
+                      PNG (Image)
+                    </Button>
+                    <Button
+                      variant={params.format === 'svg' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setParams({ ...params, format: 'svg' })}
+                      className={cn(
+                        "flex-1 h-9 font-medium",
+                        params.format === 'svg'
+                          ? getThemeClasses({
+                            light: "bg-purple-100 text-purple-700 hover:bg-purple-200",
+                            dark: "bg-purple-900/40 text-purple-300 hover:bg-purple-900/60"
+                          })
+                          : getThemeClasses({
+                            light: "text-gray-600 hover:bg-gray-100",
+                            dark: "text-gray-400 hover:bg-gray-700"
+                          })
+                      )}
+                    >
+                      SVG (Animated)
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-3 mt-4">
@@ -1054,12 +1136,13 @@ export default function Home() {
                         Striped
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className={cn("flex items-center space-x-2 transition-opacity", (params.format === 'png') ? "opacity-30 pointer-events-none" : "")}>
                       <div className="relative flex items-center">
                         <input
                           type="checkbox"
                           id="animated"
                           checked={params.animated}
+                          disabled={params.format === 'png'}
                           onChange={(e) => {
                             const isChecked = e.target.checked;
                             setParams({
@@ -1108,13 +1191,13 @@ export default function Home() {
                         Animated Stripes
                       </Label>
                     </div>
-                    <div className={cn("flex items-center space-x-2 transition-opacity", params.colors.length <= 1 ? "opacity-50 pointer-events-none" : "")}>
+                    <div className={cn("flex items-center space-x-2 transition-opacity", (params.colors.length <= 1 || params.format === 'png') ? "opacity-30 pointer-events-none" : "")}>
                       <div className="relative flex items-center">
                         <input
                           type="checkbox"
                           id="gradientAnimated"
                           checked={params.gradientAnimated}
-                          disabled={params.colors.length <= 1}
+                          disabled={params.colors.length <= 1 || params.format === 'png'}
                           onChange={(e) => {
                             setParams({
                               ...params,
@@ -1196,6 +1279,7 @@ export default function Home() {
                         step={0.1}
                         value={[params.stripeAnimationSpeed]}
                         onValueChange={(value) => setParams({ ...params, stripeAnimationSpeed: value[0] })}
+                        disabled={params.format === 'png'}
                         className={cn(
                           "mt-2",
                           getThemeClasses({
@@ -1241,6 +1325,7 @@ export default function Home() {
                         step={0.1}
                         value={[params.gradientAnimationSpeed]}
                         onValueChange={(value) => setParams({ ...params, gradientAnimationSpeed: value[0] })}
+                        disabled={params.format === 'png'}
                         className={cn(
                           "mt-2",
                           getThemeClasses({
@@ -1289,8 +1374,10 @@ export default function Home() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          disabled={params.format === 'png'}
                           className={cn(
                             "ml-2 transition-all hover:scale-110",
+                            params.format === 'png' ? "opacity-30 pointer-events-none" : "",
                             getThemeClasses({
                               light: "text-gray-500 hover:text-gray-700",
                               dark: "text-gray-400 hover:text-gray-200"
@@ -1310,7 +1397,7 @@ export default function Home() {
                           })
                         )}
                       >
-                        Reload preview to play initial animation again
+                        {params.format === 'png' ? "Reloading is not available for static PNG images." : "Reload preview to play initial animation again"}
                       </TooltipContent>
                     </Tooltip>
                   </div>

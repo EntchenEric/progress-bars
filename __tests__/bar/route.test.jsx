@@ -41,8 +41,9 @@ global.window = undefined;
 global.document = undefined;
 
 describe('GET /bar', () => {
-  const createMockRequest = (searchParams = {}) => ({
+  const createMockRequest = (searchParams = {}, pathname = '/bar') => ({
     nextUrl: {
+      pathname,
       searchParams: {
         get: (key) => searchParams[key],
       }

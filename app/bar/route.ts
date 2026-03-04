@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 /**
- * Handles GET requests to generate a customizable SVG progress bar image.
- *
- * Extracts query parameters from the request URL to configure the progress bar's appearance, including color, gradient, background, progress value, dimensions, border radius, striped and animated effects, and animation speeds. Returns an SVG image as the response.
- *
- * @returns A `NextResponse` containing the generated SVG progress bar with appropriate headers.
+ * Handles GET requests to generate a customizable progress bar image (SVG or PNG).
  */
 const MAX_GRADIENT_LENGTH = 2000;
 
 export async function GET(request: NextRequest) {
-
   const searchParams = request.nextUrl.searchParams;
 
   const color = searchParams.get('color') || '#2563eb';
@@ -27,11 +23,26 @@ export async function GET(request: NextRequest) {
   const safeColorGradientParts = extractColors(colorGradient);
   const safeBackgroundGradientParts = extractColors(backgroundGradient);
 
-
   const progress = parseIntSafe(searchParams.get('progress'), 0);
   const height = Math.min(500, Math.max(5, parseIntSafe(searchParams.get('height'), 5)));
   const width = Math.min(3000, Math.max(10, parseIntSafe(searchParams.get('width'), 10)));
   const borderRadius = Math.min(1000, Math.max(0, parseIntSafe(searchParams.get('borderRadius'), 10)));
+
+  // Detect format from query param or extension
+  const formatQuery = searchParams.get('_format');
+  const pathname = request.nextUrl.pathname;
+  let format = 'svg';
+
+  if (formatQuery) {
+    format = formatQuery.toLowerCase();
+  } else if (pathname.endsWith('.png')) {
+    format = 'png';
+  } else if (pathname.endsWith('.svg')) {
+    format = 'svg';
+  }
+
+  const isStatic = format === 'png';
+
   const striped = searchParams.get('striped') === 'true';
   const animated = searchParams.get('animated') === 'true';
   const gradientAnimated = searchParams.get('gradientAnimated') === 'true';
@@ -54,8 +65,12 @@ export async function GET(request: NextRequest) {
   const stripeSize = Math.max(10, Math.min(40, 20 * safeStripeAnimationSpeed));
 
   const initialAnimationSpeed = parseFloatSafe(searchParams.get('initialAnimationSpeed'), 1);
-  const shouldAnimate = initialAnimationSpeed > 0;
+  const shouldAnimate = !isStatic && initialAnimationSpeed > 0;
   const initialAnimationDuration = (clampedProgress / 100) * (1 / initialAnimationSpeed);
+
+  const finalAnimated = !isStatic && animated;
+  const finalGradientAnimated = !isStatic && gradientAnimated;
+  const finalStriped = striped;
 
   const createGradientDef = () => {
     let gradientInner = '';
@@ -64,7 +79,6 @@ export async function GET(request: NextRequest) {
         `<stop offset="${(index * 100) / (safeColorGradientParts.length - 1)}%" style="stop-color:${c}; stop-opacity:1" />`
       ).join('\n');
     }
-
 
     if (!gradientInner) {
       gradientInner = `
@@ -95,10 +109,8 @@ export async function GET(request: NextRequest) {
     `;
   };
 
-  // Create CSS compatible linear-gradient string for foreignObject
   let cssGradient = '';
   if (safeColorGradientParts.length >= 2) {
-    // We append the first color to the end so it loops seamlessly in CSS background panning
     cssGradient = `linear-gradient(90deg, ${safeColorGradientParts.join(', ')}, ${safeColorGradientParts[0]})`;
   }
   if (!cssGradient) {
@@ -109,11 +121,11 @@ export async function GET(request: NextRequest) {
     <defs>
       ${createGradientDef()}
       
-      ${striped ? `
+      ${finalStriped ? `
       <pattern id="stripePattern" patternUnits="userSpaceOnUse" width="${stripeSize}" height="${stripeSize}" patternTransform="rotate(45 0 0)">
         <rect width="${stripeSize / 2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0.15)" />
         <rect x="${stripeSize / 2}" width="${stripeSize / 2}" height="${stripeSize}" fill="rgba(255, 255, 255, 0)" />
-        ${animated ? `<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="${stripeSize} 0" dur="${stripeAnimationDurationString}s" repeatCount="indefinite" additive="sum" />` : ''}
+        ${finalAnimated ? `<animateTransform attributeName="patternTransform" type="translate" from="0 0" to="${stripeSize} 0" dur="${stripeAnimationDurationString}s" repeatCount="indefinite" additive="sum" />` : ''}
       </pattern>
       ` : ''}
       
@@ -142,23 +154,23 @@ export async function GET(request: NextRequest) {
       filter="url(#shadow)"
     />
     <g clip-path="url(#progressClip)">
-      ${gradientAnimated ? `
+      ${finalGradientAnimated ? `
       <foreignObject width="${width}" height="${height}">
         <div xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%;">
-          <div class="css-animated-gradient ${animated && !striped ? 'pulse-animated' : ''} ${shouldAnimate ? 'initial-animation' : ''}" style="width: 100%; height: 100%; background: ${cssGradient};"></div>
+          <div class="css-animated-gradient ${finalAnimated && !finalStriped ? 'pulse-animated' : ''} ${shouldAnimate ? 'initial-animation' : ''}" style="width: 100%; height: 100%; background: ${cssGradient};"></div>
         </div>
       </foreignObject>
       ` : `
       <rect
-        width="${width}"
+        width="${isStatic ? progressWidth : width}"
         height="${height}"
         fill="url(#progressGradient)"
-        ${animated && !striped ? 'class="pulse-animated"' : ''}
+        ${finalAnimated && !finalStriped ? 'class="pulse-animated"' : ''}
         ${shouldAnimate ? 'class="initial-animation"' : ''}
       />
       `}
       
-      ${striped ? `
+      ${finalStriped ? `
       <rect
         width="${progressWidth}"
         height="${height}"
@@ -179,6 +191,7 @@ export async function GET(request: NextRequest) {
       opacity="0.5"
     />
     
+    ${isStatic ? '' : `
     <style>
       @keyframes progress-stripes {
         from { background-position: ${50 * safeStripeAnimationSpeed}px 0; }
@@ -218,15 +231,28 @@ export async function GET(request: NextRequest) {
         100% { opacity: 0.8; }
       }
     </style>
+    `}
   </svg>`;
 
-  const format = searchParams.get('_format') || 'svg';
-
   if (format === 'png') {
-    return new NextResponse('PNG conversion is not supported. Please use the .svg extension.', {
-      status: 400,
-      headers: { 'Content-Type': 'text/plain' },
-    });
+    try {
+      const pngBuffer = await sharp(Buffer.from(svg))
+        .png()
+        .toBuffer();
+
+      return new NextResponse(new Uint8Array(pngBuffer), {
+        headers: {
+          'Content-Type': 'image/png',
+          'Cache-Control': 'public, max-age=60',
+        },
+      });
+    } catch (error) {
+      console.error('PNG conversion error:', error);
+      return new NextResponse('Error generating PNG image', {
+        status: 500,
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
   }
 
   return new NextResponse(svg, {
@@ -239,12 +265,6 @@ export async function GET(request: NextRequest) {
 
 /**
  * Returns a hex color string with its RGB channels lightened or darkened by a specified amount.
- *
- * @param color - A hex color string in the format `#RRGGBB`.
- * @param amount - The integer value to add to each RGB channel; positive to lighten, negative to darken.
- * @returns The adjusted hex color string.
- *
- * @remark If the adjustment causes a channel to exceed 255 or drop below 0, it is clamped to the valid range.
  */
 function adjustColor(color: string, amount: number): string {
   color = color.replace('#', '');
@@ -261,52 +281,30 @@ function adjustColor(color: string, amount: number): string {
 }
 
 /**
- * Safely parses a string as an integer, returning a default value if parsing fails.
- *
- * @param value - The string to parse.
- * @param defaultValue - The value to return if {@link value} is null, empty, or not a valid integer.
- * @returns The parsed integer, or {@link defaultValue} if parsing is unsuccessful.
+ * Safely parses a string as an integer.
  */
 function parseIntSafe(value: string | null, defaultValue: number): number {
-  if (value === null || value === undefined || value === '') {
-    return defaultValue;
-  }
-
+  if (!value) return defaultValue;
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
 /**
- * Safely parses a string as a floating-point number, returning a default value if parsing fails.
- *
- * @param value - The string to parse.
- * @param defaultValue - The value to return if {@link value} is null, empty, or not a valid number.
- * @returns The parsed floating-point number, or {@link defaultValue} if parsing is unsuccessful.
+ * Safely parses a string as a float.
  */
 function parseFloatSafe(value: string | null, defaultValue: number): number {
-  if (value === null || value === undefined || value === '') {
-    return defaultValue;
-  }
-
+  if (!value) return defaultValue;
   const parsed = parseFloat(value);
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
 /**
- * Validates if the given string is a valid CSS color format.
- * Accepts hex (#RGB, #RRGGBB, #RGBA, #RRGGBBAA), whitelisted names, or strict rgba().
- * 
- * @param color - The color string to validate.
- * @returns True if the color is valid, false otherwise.
+ * Validates CSS colors.
  */
 function isValidColor(color: string | null): boolean {
   if (!color) return false;
-
-  // 1. Strict Hex Regex (#RGB, #RRGGBB)
   const hexRegex = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
   if (hexRegex.test(color)) return true;
-
-  // 2. CSS Color Name Whitelist
   const ALLOWED_COLOR_NAMES = new Set([
     'aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond',
     'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue',
@@ -329,53 +327,33 @@ function isValidColor(color: string | null): boolean {
     'yellow', 'yellowgreen'
   ]);
   if (ALLOWED_COLOR_NAMES.has(color.toLowerCase())) return true;
-
-  // 3. Strict RGB/RGBA Regex (0-255 for RGB, 0-1 for alpha)
   const rgbPart = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)';
   const alphaPart = '(?:0(?:\\.\\d+)?|1(?:\\.0+)?|\\.\\d+)';
   const rgbaRegex = new RegExp(`^rgba?\\(\\s*${rgbPart}\\s*,\\s*${rgbPart}\\s*,\\s*${rgbPart}\\s*(?:,\\s*${alphaPart}\\s*)?\\)$`, 'i');
-
   return rgbaRegex.test(color);
 }
 
 /**
- * Safely extracts valid CSS colors from a string.
- * Uses a manual parser to avoid ReDoS and handle nested commas in color functions.
- * Strips dangerous characters from each part.
- * 
- * @param input - The gradient string to parse.
- * @returns An array of validated color strings.
+ * Extracts colors from gradient string.
  */
 function extractColors(input: string | null): string[] {
-  if (!input || input.length > MAX_GRADIENT_LENGTH) {
-    return [];
-  }
-
+  if (!input || input.length > MAX_GRADIENT_LENGTH) return [];
   const results: string[] = [];
   let current = '';
   let depth = 0;
-
   for (let i = 0; i < input.length; i++) {
     const char = input[i];
     if (char === '(') depth++;
     if (char === ')') depth--;
-
     if (char === ',' && depth === 0) {
       const sanitized = current.trim().replace(/[<>"';]/g, '');
-      if (isValidColor(sanitized)) {
-        results.push(sanitized);
-      }
+      if (isValidColor(sanitized)) results.push(sanitized);
       current = '';
     } else {
       current += char;
     }
   }
-
   const finalSanitized = current.trim().replace(/[<>"';]/g, '');
-  if (isValidColor(finalSanitized)) {
-    results.push(finalSanitized);
-  }
-
+  if (isValidColor(finalSanitized)) results.push(finalSanitized);
   return results;
 }
-

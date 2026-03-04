@@ -69,7 +69,7 @@ describe('Progress Bar Generator', () => {
                 fireEvent.click(greenButton)
             })
 
-            const url = screen.getByDisplayValue(/.*\/bar\?/)
+            const url = screen.getByDisplayValue(/.*\/bar\.(svg|png)\?/)
             expect(url.value).toContain('color=%2316a34a')
         })
 
@@ -81,7 +81,7 @@ describe('Progress Bar Generator', () => {
                 fireEvent.change(widthInput, { target: { value: '4000' } })
             })
 
-            const url = screen.getByDisplayValue(/.*\/bar\?/)
+            const url = screen.getByDisplayValue(/.*\/bar\.(svg|png)\?/)
             expect(url.value).toContain('width=3000')
         })
 
@@ -116,7 +116,7 @@ describe('Progress Bar Generator', () => {
     describe('URL Generation and Copying', () => {
         it('generates correct URL with current parameters', () => {
             render(<Page />)
-            const urlInput = screen.getByDisplayValue(/.*\/bar\?/)
+            const urlInput = screen.getByDisplayValue(/.*\/bar\.(svg|png)\?/)
             expect(urlInput.value).toContain('progress=75')
             expect(urlInput.value).toContain('color=%232563eb')
         })
@@ -130,7 +130,7 @@ describe('Progress Bar Generator', () => {
             })
 
             expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-                expect.stringMatching(/.*\/bar\?/)
+                expect.stringMatching(/.*\/bar\.(svg|png)\?/)
             )
         })
 
@@ -174,7 +174,7 @@ describe('Progress Bar Generator', () => {
                 fireEvent.blur(colorInput)
             })
 
-            const url = screen.getByDisplayValue(/.*\/bar\?/)
+            const url = screen.getByDisplayValue(/.*\/bar\.(svg|png)\?/)
             expect(url.value).toContain('color=%232563eb')
         })
     })
@@ -188,7 +188,7 @@ describe('Progress Bar Generator', () => {
             expect(initialAnimSpeedSlider).toBeInTheDocument()
 
             // Check default value in URL
-            const url = screen.getByDisplayValue(/.*\/bar\?/)
+            const url = screen.getByDisplayValue(/.*\/bar\.(svg|png)\?/)
             expect(url.value).toContain('initialAnimationSpeed=1')
 
             // Change the value
@@ -197,7 +197,7 @@ describe('Progress Bar Generator', () => {
             })
 
             // Check if URL updated
-            const updatedUrl = screen.getByDisplayValue(/.*\/bar\?/)
+            const updatedUrl = screen.getByDisplayValue(/.*\/bar\.(svg|png)\?/)
             expect(updatedUrl.value).toContain('initialAnimationSpeed=2')
         })
 
@@ -210,7 +210,7 @@ describe('Progress Bar Generator', () => {
                 fireEvent.change(initialAnimSpeedSlider, { target: { value: "0" } })
             })
 
-            const url = screen.getByDisplayValue(/.*\/bar\?/)
+            const url = screen.getByDisplayValue(/.*\/bar\.(svg|png)\?/)
             expect(url.value).toContain('initialAnimationSpeed=0')
         })
     })

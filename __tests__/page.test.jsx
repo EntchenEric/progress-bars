@@ -171,6 +171,7 @@ describe('Progress Bar Generator', () => {
 
             await act(async () => {
                 fireEvent.change(colorInput, { target: { value: 'invalid-color' } })
+                fireEvent.blur(colorInput)
             })
 
             const url = screen.getByDisplayValue(/.*\/bar\?/)

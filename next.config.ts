@@ -4,12 +4,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/bar.png',
-        destination: '/bar',
-      },
-      {
         source: '/bar.svg',
-        destination: '/bar',
+        destination: '/bar?_format=svg',
       },
     ]
   },

@@ -419,7 +419,6 @@ export default function Home() {
                     <Label
                       htmlFor="progress"
                       className={cn(
-                        "cursor-pointer",
                         getThemeClasses({
                           light: "text-gray-700",
                           dark: "text-gray-200"
@@ -565,13 +564,21 @@ export default function Home() {
                         </div>
                         <Input
                           type="text"
+                          aria-label={`Bar color ${index + 1}`}
                           value={color}
                           onChange={(e) => {
-                            const newColor = e.target.value;
                             const newColors = [...params.colors];
-                            const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
-                            newColors[index] = isValidHex ? newColor : '#2563eb';
+                            newColors[index] = e.target.value;
                             setParams({ ...params, colors: newColors });
+                          }}
+                          onBlur={(e) => {
+                            const newColor = e.target.value;
+                            const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
+                            if (!isValidHex) {
+                              const newColors = [...params.colors];
+                              newColors[index] = '#2563eb';
+                              setParams({ ...params, colors: newColors });
+                            }
                           }}
                           className={cn(
                             "flex-1 h-8 text-xs font-mono",
@@ -669,13 +676,21 @@ export default function Home() {
                         </div>
                         <Input
                           type="text"
+                          aria-label={`Background color ${index + 1}`}
                           value={color}
                           onChange={(e) => {
-                            const newColor = e.target.value;
                             const newColors = [...params.backgroundColors];
-                            const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
-                            newColors[index] = isValidHex ? newColor : '#f3f4f6';
+                            newColors[index] = e.target.value;
                             setParams({ ...params, backgroundColors: newColors });
+                          }}
+                          onBlur={(e) => {
+                            const newColor = e.target.value;
+                            const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
+                            if (!isValidHex) {
+                              const newColors = [...params.backgroundColors];
+                              newColors[index] = '#f3f4f6';
+                              setParams({ ...params, backgroundColors: newColors });
+                            }
                           }}
                           className={cn(
                             "flex-1 h-8 text-xs font-mono",
@@ -766,7 +781,6 @@ export default function Home() {
                     <Label
                       htmlFor="height"
                       className={cn(
-                        "cursor-pointer",
                         getThemeClasses({
                           light: "text-gray-700",
                           dark: "text-gray-200"
@@ -809,7 +823,6 @@ export default function Home() {
                     <Label
                       htmlFor="width"
                       className={cn(
-                        "cursor-pointer",
                         getThemeClasses({
                           light: "text-gray-700",
                           dark: "text-gray-200"
@@ -867,7 +880,6 @@ export default function Home() {
                     <Label
                       htmlFor="borderRadius"
                       className={cn(
-                        "cursor-pointer",
                         getThemeClasses({
                           light: "text-gray-700",
                           dark: "text-gray-200"
@@ -914,7 +926,6 @@ export default function Home() {
                       <Label
                         htmlFor="initialAnimationSpeed"
                         className={cn(
-                          "cursor-pointer",
                           getThemeClasses({
                             light: "text-gray-700",
                             dark: "text-gray-200"
@@ -1034,7 +1045,6 @@ export default function Home() {
                       <Label
                         htmlFor="striped"
                         className={cn(
-                          "cursor-pointer",
                           getThemeClasses({
                             light: "text-gray-700",
                             dark: "text-gray-200"
@@ -1089,7 +1099,6 @@ export default function Home() {
                       <Label
                         htmlFor="animated"
                         className={cn(
-                          "cursor-pointer",
                           getThemeClasses({
                             light: "text-gray-700",
                             dark: "text-gray-200"
@@ -1143,7 +1152,6 @@ export default function Home() {
                       <Label
                         htmlFor="gradientAnimated"
                         className={cn(
-                          "cursor-pointer",
                           getThemeClasses({
                             light: "text-gray-700",
                             dark: "text-gray-200"
@@ -1161,7 +1169,6 @@ export default function Home() {
                         <Label
                           htmlFor="stripeAnimationSpeed"
                           className={cn(
-                            "cursor-pointer",
                             getThemeClasses({
                               light: "text-gray-700",
                               dark: "text-gray-200"
@@ -1207,7 +1214,6 @@ export default function Home() {
                         <Label
                           htmlFor="gradientAnimationSpeed"
                           className={cn(
-                            "cursor-pointer",
                             getThemeClasses({
                               light: "text-gray-700",
                               dark: "text-gray-200"
@@ -1457,6 +1463,7 @@ export default function Home() {
                       <div className="relative">
                         <Input
                           value={generateUrl()}
+                          aria-label="Progress Bar URL"
                           readOnly
                           className={cn(
                             "pr-10",
@@ -1529,6 +1536,7 @@ export default function Home() {
                       <div className="relative">
                         <Input
                           value={`<img src="${generateUrl()}" alt="Progress Bar">`}
+                          aria-label="HTML Embed Code"
                           readOnly
                           className={cn(
                             "pr-10",

@@ -82,7 +82,9 @@ export async function POST(request: NextRequest) {
       }
     }
     const progress = Math.min(Math.max(parseFloat(progressValue as string) || 0, 0), 100);
-    const progressWidth = (progress / 100) * (input.width ?? 10);
+    const widthValue = input.width ?? 10;
+    const width = Math.min(3000, Math.max(10, typeof widthValue === 'string' ? parseInt(widthValue, 10) || 10 : widthValue));
+    const progressWidth = (progress / 100) * width;
 
     // Parse and validate color
     const colorValue = input.color ?? '#2563eb';
@@ -104,9 +106,6 @@ export async function POST(request: NextRequest) {
     // Parse and validate dimensions
     const heightValue = input.height ?? 10;
     const height = Math.min(500, Math.max(5, typeof heightValue === 'string' ? parseInt(heightValue, 10) || 5 : heightValue));
-
-    const widthValue = input.width ?? 10;
-    const width = Math.min(3000, Math.max(10, typeof widthValue === 'string' ? parseInt(widthValue, 10) || 10 : widthValue));
 
     const borderRadiusValue = input.borderRadius ?? 10;
     const borderRadius = Math.min(1000, Math.max(0, typeof borderRadiusValue === 'string' ? parseInt(borderRadiusValue, 10) || 10 : borderRadiusValue));

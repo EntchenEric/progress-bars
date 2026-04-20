@@ -33,7 +33,10 @@ export default function Home() {
     gradientAnimationSpeed: 1,
     initialAnimationSpeed: 1,
     format: 'svg' as 'png' | 'svg',
-  })
+    showLabels: true,
+    showValue: false,
+    showProgress: false,
+})
 
   const [copied, setCopied] = useState<string | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')

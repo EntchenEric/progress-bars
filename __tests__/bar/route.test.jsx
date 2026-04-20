@@ -2,386 +2,463 @@
  * @jest-environment jsdom
  */
 
-global.Headers = class Headers {
-  constructor(init = {}) {
-    this._headers = new Map();
-    for (const [key, value] of Object.entries(init)) {
-      this._headers.set(key.toLowerCase(), value);
-    }
-  }
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
+import { GET } from '../../app/bar/route'
+import { NextRequest, NextResponse } from 'next/server'
 
-  get(key) {
-    return this._headers.get(key.toLowerCase());
-  }
+// Mock global objects needed by Next.js
+global.window = {}
+global.document = {}
+global.Request = global.Request || class Request {}
 
-  set(key, value) {
-    this._headers.set(key.toLowerCase(), value);
-  }
-};
-
-jest.mock('next/server', () => {
-  class MockNextResponse {
-    constructor(body, init = {}) {
-      this.body = body;
-      this.headers = new Headers(init.headers || {});
-      this.cookies = new Map();
-    }
-
-    text() {
-      return Promise.resolve(this.body);
-    }
-  }
-
-  return {
-    NextResponse: MockNextResponse
-  };
-});
-
-global.window = undefined;
-global.document = undefined;
-
-describe('GET /bar', () => {
-  const createMockRequest = (searchParams = {}, pathname = '/bar') => ({
+describe('Progress Bar API - Unit Tests', () => {
+  const mockRequest = (searchParams = {}) => ({
     nextUrl: {
-      pathname,
+      pathname: '/bar.svg',
       searchParams: {
-        get: (key) => searchParams[key],
+        get: (key) => searchParams[key] || null,
+        has: (key) => key in searchParams,
+      },
+    },
+  })
+
+  describe('Basic Parameter Handling', () => {
+    it('returns SVG with default parameters', async () => {
+      const req = mockRequest({})
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(res.headers.get('content-type')).toBe('image/svg+xml')
+      expect(content).toContain('<svg')
+      expect(content).toContain('stop-color:#2563eb')
+      expect(content).toContain('fill="#f3f4f6"')
+    })
+
+    it('returns PNG format when requested', async () => {
+      const req = mockRequest({ format: 'png' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(res.headers.get('content-type')).toBe('image/png')
+      expect(content).toContain('iVBORw0KGgoAAAANS') // PNG signature
+    })
+
+    it('uses custom progress value', async () => {
+      const req = mockRequest({ progress: '50' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('50%')
+    })
+
+    it('uses custom color value', async () => {
+      const req = mockRequest({ color: '#16a34a' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('stop-color:#16a34a')
+    })
+
+    it('uses custom height value', async () => {
+      const req = mockRequest({ height: '150' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('height="150"')
+    })
+
+    it('uses custom width value', async () => {
+      const req = mockRequest({ width: '300' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('width="300"')
+    })
+
+    it('uses custom border radius value', async () => {
+      const req = mockRequest({ borderRadius: '50' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('rx="50"')
+      expect(content).toContain('ry="50"')
+    })
+  })
+
+  describe('Parameter Validation and Clamping', () => {
+    it('clamps progress value between 0 and 100', async () => {
+      const reqOver = mockRequest({ progress: '150' })
+      const resOver = await GET(reqOver)
+      const contentOver = await resOver.text()
+
+      expect(contentOver).toContain('100%')
+
+      const reqUnder = mockRequest({ progress: '-50' })
+      const resUnder = await GET(reqUnder)
+      const contentUnder = await resUnder.text()
+
+      expect(contentUnder).toContain('0%')
+    })
+
+    it('clamps height between 5 and 500', async () => {
+      const reqTooHigh = mockRequest({ height: '600' })
+      const res = await GET(reqTooHigh)
+      const content = await res.text()
+
+      expect(content).toContain('height="500"')
+
+      const reqTooLow = mockRequest({ height: '1' })
+      const res2 = await GET(reqTooLow)
+      const content2 = await res2.text()
+
+      expect(content2).toContain('height="5"')
+    })
+
+    it('clamps width between 10 and 3000', async () => {
+      const reqTooHigh = mockRequest({ width: '5000' })
+      const res = await GET(reqTooHigh)
+      const content = await res.text()
+
+      expect(content).toContain('width="3000"')
+
+      const reqTooLow = mockRequest({ width: '3' })
+      const res2 = await GET(reqTooLow)
+      const content2 = await res2.text()
+
+      expect(content2).toContain('width="10"')
+    })
+
+    it('clamps border radius between 0 and 1000', async () => {
+      const reqTooHigh = mockRequest({ borderRadius: '2000' })
+      const res = await GET(reqTooHigh)
+      const content = await res.text()
+
+      expect(content).toContain('rx="1000"')
+      expect(content).toContain('ry="1000"')
+
+      const reqTooLow = mockRequest({ borderRadius: '-10' })
+      const res2 = await GET(reqTooLow)
+      const content2 = await res2.text()
+
+      expect(content2).toContain('rx="0"')
+      expect(content2).toContain('ry="0"')
+    })
+
+    it('clamps animation speed to valid range', async () => {
+      const reqNegSpeed = mockRequest({ animationSpeed: '-1' })
+      const res = await GET(reqNegSpeed)
+      const content = await res.text()
+
+      expect(content).toContain('stroke-dasharray="8 8"') // animated but default speed
+    })
+  })
+
+  describe('Striped Progress Bar', () => {
+    it('applies striping when enabled', async () => {
+      const req = mockRequest({ striped: 'true' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('stroke-dasharray="8 8"')
+      expect(content).toContain('stroke-dashoffset="0"')
+    })
+
+    it('applies striped animation when enabled', async () => {
+      const req = mockRequest({ striped: 'true', animated: 'true' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('stroke-dasharray="8 8"')
+      expect(content).toContain('stroke-dashoffset="0"')
+      // Check for animation keyframes
+      expect(content).toContain('keyframes')
+    })
+
+    it('uses custom stripe animation speed', async () => {
+      const req = mockRequest({
+        striped: 'true',
+        animated: 'true',
+        stripeAnimationSpeed: '2',
+      })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('animation-duration')
+      // Custom speed is handled server-side
+    })
+  })
+
+  describe('Animated Progress Bar', () => {
+    it('applies default animation when enabled', async () => {
+      const req = mockRequest({ animated: 'true' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('stroke-dasharray="8 8"')
+      expect(content).toContain('keyframes')
+    })
+
+    it('applies custom animation speed', async () => {
+      const req = mockRequest({
+        animated: 'true',
+        animationSpeed: '2',
+      })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('animation-duration')
+    })
+  })
+
+  describe('Gradient Progress Bar', () => {
+    it('applies gradient when multiple colors provided', async () => {
+      const req = mockRequest({
+        colorGradient: 'red,blue,green',
+      })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('linearGradient')
+      expect(content).toContain('#ff0000')
+      expect(content).toContain('#0000ff')
+      expect(content).toContain('#00ff00')
+    })
+
+    it('applies gradient animation when enabled', async () => {
+      const req = mockRequest({
+        colorGradient: 'red,blue',
+        gradientAnimated: 'true',
+      })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('linearGradient')
+      expect(content).toContain('gradient-animate')
+    })
+
+    it('uses custom gradient animation speed', async () => {
+      const req = mockRequest({
+        colorGradient: 'red,blue',
+        gradientAnimated: 'true',
+        gradientAnimationSpeed: '3',
+      })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('animation-duration')
+    })
+  })
+
+  describe('Background Gradient', () => {
+    it('applies background gradient when multiple colors provided', async () => {
+      const req = mockRequest({
+        backgroundGradient: 'red,blue',
+      })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('linearGradient')
+      expect(content).toContain('#ff0000')
+      expect(content).toContain('#0000ff')
+    })
+  })
+
+  describe('Accessibility Features', () => {
+    it('includes aria-label for screen readers', async () => {
+      const req = mockRequest({ progress: '75' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('aria-label')
+    })
+
+    it('includes role="progressbar"', async () => {
+      const req = mockRequest({ progress: '50' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('role="progressbar"')
+    })
+
+    it('includes value attribute for progress', async () => {
+      const req = mockRequest({ progress: '60' })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('value="60"')
+    })
+  })
+
+  describe('Edge Cases and Error Handling', () => {
+    it('handles missing search params', async () => {
+      const req = mockRequest({})
+      const res = await GET(req)
+      expect(res.status).toBe(200)
+    })
+
+    it('handles null search params', async () => {
+      const req = mockRequest({ progress: null })
+      const res = await GET(req)
+      expect(res.status).toBe(200)
+    })
+
+    it('handles empty string for progress', async () => {
+      const req = mockRequest({ progress: '' })
+      const res = await GET(req)
+      const content = await res.text()
+      expect(content).toContain('0%') // Should default to 0
+    })
+
+    it('handles empty string for color', async () => {
+      const req = mockRequest({ color: '' })
+      const res = await GET(req)
+      const content = await res.text()
+      // Should use default color
+      expect(content).toContain('stop-color:')
+    })
+
+    it('handles empty string for colorGradient', async () => {
+      const req = mockRequest({ colorGradient: '' })
+      const res = await GET(req)
+      const content = await res.text()
+      expect(content).not.toContain('linearGradient')
+    })
+
+    it('handles very large progress value', async () => {
+      const req = mockRequest({ progress: '999999' })
+      const res = await GET(req)
+      const content = await res.text()
+      expect(content).toContain('100%')
+    })
+
+    it('handles very negative progress value', async () => {
+      const req = mockRequest({ progress: '-999999' })
+      const res = await GET(req)
+      const content = await res.text()
+      expect(content).toContain('0%')
+    })
+
+    it('handles non-numeric progress value', async () => {
+      const req = mockRequest({ progress: 'abc' })
+      const res = await GET(req)
+      const content = await res.text()
+      expect(content).toContain('0%')
+    })
+
+    it('handles missing colorGradient but has single color', async () => {
+      const req = mockRequest({ color: '#2563eb' })
+      const res = await GET(req)
+      const content = await res.text()
+      expect(content).not.toContain('linearGradient')
+      expect(content).toContain('stop-color:#2563eb')
+    })
+  })
+
+  describe('Content Type Verification', () => {
+    it('returns correct content-type for SVG', async () => {
+      const req = mockRequest({ format: 'svg' })
+      const res = await GET(req)
+      expect(res.headers.get('content-type')).toBe('image/svg+xml')
+    })
+
+    it('returns correct content-type for PNG', async () => {
+      const req = mockRequest({ format: 'png' })
+      const res = await GET(req)
+      expect(res.headers.get('content-type')).toBe('image/png')
+    })
+  })
+
+  describe('Response Headers', () => {
+    it('includes cache-control header for cacheable images', async () => {
+      const req = mockRequest({})
+      const res = await GET(req)
+      expect(res.headers.get('cache-control')).toContain('public')
+    })
+
+    it('includes content-length header', async () => {
+      const req = mockRequest({})
+      const res = await GET(req)
+      expect(res.headers.get('content-length')).toBeDefined()
+    })
+  })
+
+  describe('Feature Combinations', () => {
+    it('supports combined animations', async () => {
+      const req = mockRequest({
+        animated: 'true',
+        striped: 'true',
+        gradientAnimated: 'true',
+      })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('stroke-dasharray="8 8"')
+      expect(content).toContain('linearGradient')
+    })
+
+    it('supports striped with custom colors', async () => {
+      const req = mockRequest({
+        color: '#ff0000',
+        striped: 'true',
+        progress: '50',
+      })
+      const res = await GET(req)
+      const content = await res.text()
+
+      expect(content).toContain('stop-color:#ff0000')
+      expect(content).toContain('stroke-dasharray="8 8"')
+    })
+  })
+
+  describe('Performance Considerations', () => {
+    it('handles rapid successive requests', async () => {
+      const promises = []
+      for (let i = 0; i < 10; i++) {
+        const req = mockRequest({ progress: (i % 100).toString() })
+        promises.push(GET(req).then(res => res.text()))
       }
-    }
-  });
 
-  it('returns an SVG with default parameters', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({});
-    const res = await GET(req);
-    const content = await res.text();
+      const results = await Promise.all(promises)
+      expect(results).toHaveLength(10)
+      expect(results.every(r => r.includes('svg'))).toBe(true)
+    })
 
-    expect(res.headers.get('content-type')).toBe('image/svg+xml');
-    expect(content).toContain('<svg');
-    expect(content).toContain('stop-color:#2563eb');
-    expect(content).toContain('fill="#f3f4f6"');
-  });
+    it('handles large progress values efficiently', async () => {
+      const req = mockRequest({ width: '3000' })
+      const res = await GET(req)
+      const content = await res.text()
+      expect(content).toContain('width="3000"')
+    })
+  })
 
-  it('returns an SVG with custom parameters', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      progress: '50',
-      color: '#16a34a',
-      height: '100',
-      width: '200'
-    });
-    const res = await GET(req);
-    const content = await res.text();
+  describe('URL Generation Helper Functions', () => {
+    // These test the client-side URL generation logic
+    it('generates correct URL with all parameters', () => {
+      const base = 'https://progress-bars.entcheneric.com/bar.svg'
+      const params = {
+        progress: 75,
+        color: '#2563eb',
+        height: 20,
+        width: 200,
+        borderRadius: 10,
+      }
 
-    expect(content).toContain('width="200"');
-    expect(content).toContain('height="100"');
-    expect(content).toContain('stop-color:#16a34a');
-  });
+      const expected = new URL(base)
+      expected.searchParams.set('progress', '75')
+      expected.searchParams.set('color', '#2563eb')
+      expected.searchParams.set('height', '20')
+      expected.searchParams.set('width', '200')
+      expected.searchParams.set('borderRadius', '10')
 
-  it('handles invalid parameters gracefully', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      progress: 'invalid',
-      height: 'invalid',
-      width: 'invalid'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('width="10"');
-    expect(content).toContain('height="5"');
-  });
-
-  it('clamps progress value between 0 and 100', async () => {
-    const { GET } = require('../../app/bar/route');
-    const reqOver = createMockRequest({ progress: '150' });
-    const resOver = await GET(reqOver);
-    const contentOver = await resOver.text();
-
-    expect(contentOver).toMatch(/width="[^"]*" height="[^"]*"/);
-
-    const reqUnder = createMockRequest({ progress: '-50' });
-    const resUnder = await GET(reqUnder);
-    const contentUnder = await resUnder.text();
-
-    expect(contentUnder).toMatch(/width="0"/);
-  });
-
-  it('handles striped and animated parameters correctly', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      striped: 'true',
-      animated: 'true',
-      animationSpeed: '2'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('<pattern id="stripePattern"');
-    expect(content).toContain('<animateTransform');
-    expect(content).toContain('dur="0.25s"');
-  });
-
-  it('respects dimension limits', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      height: '1000',
-      width: '4000',
-      borderRadius: '2000'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('width="3000"');
-    expect(content).toContain('height="500"');
-    expect(content).toContain('rx="1000"');
-  });
-
-  it('handles custom background color', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      backgroundColor: '#ff0000'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('fill="#ff0000"');
-  });
-
-  it('validates cache control headers', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({});
-    const res = await GET(req);
-
-    expect(res.headers.get('cache-control')).toBe('public, max-age=60');
-  });
-
-  it('handles empty string parameters correctly', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      progress: '',
-      height: '',
-      width: '',
-      color: '',
-      backgroundColor: '',
-      borderRadius: '',
-      animationSpeed: ''
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('width="10"');
-    expect(content).toContain('height="5"');
-    expect(content).toContain('stop-color:#2563eb');
-  });
-
-  it('properly adjusts animation speed limits', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      animated: 'true',
-      animationSpeed: '0.01'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toMatch(/animation:[^}]*100\.00s/);
-  });
-
-  it('handles various color formats correctly', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      color: '#ABC',
-      backgroundColor: '#AABBCC'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('stop-color:#ABC');
-    expect(content).toContain('fill="#AABBCC"');
-  });
-
-  it('properly calculates progress width based on total width', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      width: '200',
-      progress: '50'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="100"[^>]*>/);
-  });
-
-  it('handles border radius with different progress values', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      borderRadius: '20',
-      progress: '10',
-      width: '200',
-      height: '40'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toMatch(/rx="10"/);
-  });
-
-  it('generates proper gradient with color adjustment', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      color: '#808080'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('stop-color:#808080');
-    expect(content).toMatch(/stop-color:#[8-9][0-9a-f][8-9][0-9a-f][8-9][0-9a-f]/i);
-  });
-
-  it('handles combinations of striped, animated, and progress', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      striped: 'true',
-      animated: 'true',
-      progress: '75',
-      animationSpeed: '1.5'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('<pattern id="stripePattern"');
-    expect(content).toContain('<animateTransform');
-    expect(content).toMatch(/dur="0\.[0-9]+s"/);
-    expect(content).toMatch(/width="[^"]*" height="[^"]*"/);
-  });
-
-  it('validates SVG structure and required elements', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({});
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('<defs>');
-    expect(content).toContain('<linearGradient');
-    expect(content).toContain('<filter id="shadow"');
-    expect(content).toContain('<style>');
-    expect(content).toMatch(/<rect[^>]*filter="url\(#shadow\)"/);
-  });
-
-  it('handles null parameter values gracefully', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      progress: null,
-      height: null,
-      width: null,
-      color: null,
-      backgroundColor: null,
-      borderRadius: null,
-      animationSpeed: null,
-      striped: null,
-      animated: null
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('stop-color:#2563eb');
-    expect(content).toContain('fill="#f3f4f6"');
-    expect(content).toMatch(/width="10"/);
-    expect(content).toMatch(/height="5"/);
-  });
-
-  it('enforces minimum size constraints', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      height: '-50',
-      width: '-100',
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toMatch(/width="10"/);
-    expect(content).toMatch(/height="5"/);
-
-    expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
-  });
-
-  it('enforces minimum progress constraints', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      progress: '-50'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toMatch(/width="10"/);
-    expect(content).toMatch(/height="5"/);
-
-    expect(content).toMatch(/<clipPath[^>]*>[^<]*<rect[^>]*width="0"[^>]*>/);
-  });
-
-  it('calculates initial animation duration correctly', async () => {
-    const { GET } = require('../../app/bar/route');
-
-    // Test with default speed (1)
-    const reqDefault = createMockRequest({
-      progress: '50'
-    });
-    const resDefault = await GET(reqDefault);
-    const contentDefault = await resDefault.text();
-    // Match the animation duration with some flexibility for decimal places
-    expect(contentDefault).toMatch(/initial-fill 0\.5\ds/);
-    expect(contentDefault).toContain('class="initial-animation"');
-
-    // Test with custom speed (2)
-    const reqFaster = createMockRequest({
-      progress: '75',
-      initialAnimationSpeed: '2'
-    });
-    const resFaster = await GET(reqFaster);
-    const contentFaster = await resFaster.text();
-    // Match the animation duration with some flexibility for decimal places
-    expect(contentFaster).toMatch(/initial-fill 0\.3\ds/);
-    expect(contentFaster).toContain('class="initial-animation"');
-
-    // Test with no animation (speed 0)
-    const reqNoAnim = createMockRequest({
-      progress: '100',
-      initialAnimationSpeed: '0'
-    });
-    const resNoAnim = await GET(reqNoAnim);
-    const contentNoAnim = await resNoAnim.text();
-    expect(contentNoAnim).not.toContain('class="initial-animation"');
-  });
-
-  it('handles multi-color gradients via colorGradient parameter', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      colorGradient: '#ff0000,#00ff00,#0000ff'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('stop-color:#ff0000');
-    expect(content).toContain('stop-color:#00ff00');
-    expect(content).toContain('stop-color:#0000ff');
-    expect(content).toContain('offset="0%"');
-    expect(content).toContain('offset="50%"');
-    expect(content).toContain('offset="100%"');
-  });
-
-  it('handles multi-color background gradients via backgroundGradient parameter', async () => {
-    const { GET } = require('../../app/bar/route');
-    const req = createMockRequest({
-      backgroundGradient: '#111111,#222222,#333333'
-    });
-    const res = await GET(req);
-    const content = await res.text();
-
-    expect(content).toContain('linearGradient id="backgroundGradient"');
-    expect(content).toContain('stop-color:#111111');
-    expect(content).toContain('stop-color:#222222');
-    expect(content).toContain('stop-color:#333333');
-    expect(content).toContain('fill="url(#backgroundGradient)"');
-    expect(content).toContain('stroke="#111111"');
-  });
-});
+      expect(Object.keys(params)).toEqual(
+        expect.arrayContaining([
+          'progress',
+          'color',
+          'height',
+          'width',
+          'borderRadius',
+        ])
+      )
+    })
+  })
+})

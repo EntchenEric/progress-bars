@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 
+const MAX_GRADIENT_LENGTH = 2000;
+
 /**
  * Handles POST requests to generate a customizable progress bar image (SVG or PNG) from JSON body.
  */
 export async function POST(request: NextRequest) {
-  const MAX_GRADIENT_LENGTH = 2000;
-
   try {
     // Parse JSON body
     let body;
@@ -360,8 +360,6 @@ export async function POST(request: NextRequest) {
  * Handles GET requests to generate a customizable progress bar image (SVG or PNG).
  */
 export async function GET(request: NextRequest) {
-  const MAX_GRADIENT_LENGTH = 2000;
-
   const searchParams = request.nextUrl.searchParams;
 
   const color = searchParams.get('color') || '#2563eb';

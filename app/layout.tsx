@@ -14,8 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://progress-bars.entcheneric.com'),
   title: 'Progress Bar Generator',
   description: 'Create beautiful, customizable progress bars for your projects with just a few clicks',
+  alternates: {
+    canonical: '/',
+  },
   icons: {
     icon: '/icon.ico',
     apple: '/icon.png',
@@ -72,6 +76,30 @@ export default function RootLayout({
         <TooltipProvider>
           {children}
         </TooltipProvider>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: 'Progress Bar Generator',
+              url: 'https://progress-bars.entcheneric.com',
+              description: 'Create beautiful, customizable progress bars for your projects with just a few clicks',
+              applicationCategory: 'DesignApplication',
+              operatingSystem: 'Any',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
+              },
+              creator: {
+                '@type': 'Person',
+                name: 'EntchenEric',
+                url: 'https://github.com/entcheneric',
+              },
+            }),
+          }}
+        />
       </body>
     </html>
   )

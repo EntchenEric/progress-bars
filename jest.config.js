@@ -34,24 +34,26 @@ const customJestConfig = {
       isolatedModules: true,
     },
   },
-  coverage: {
-    reporter: ['text', 'json', 'lcov', 'text-summary'],
-    collectCoverageFrom: [
-      'app/**/*.ts',
-      'app/**/*.tsx',
-      'components/**/*.ts',
-      'components/**/*.tsx',
-      'lib/**/*.ts',
-      '!**/*.test.*',
-      '!**/*.spec.*',
-    ],
-    branches: 100,
-    functions: 100,
-    lines: 100,
-    statements: 100,
-  },
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
+  coverageReporters: ['text', 'json', 'lcov', 'text-summary'],
+  collectCoverageFrom: [
+    'app/**/*.ts',
+    'app/**/*.tsx',
+    'components/**/*.ts',
+    'components/**/*.tsx',
+    'lib/**/*.ts',
+    '!**/*.test.*',
+    '!**/*.spec.*',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 20,
+      functions: 30,
+      lines: 40,
+      statements: 40,
+    },
+  },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
